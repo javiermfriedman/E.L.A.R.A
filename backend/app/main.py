@@ -1,7 +1,8 @@
 from fastapi import FastAPI
 import app.models.users  # noqa: F401 — register models with Base
+import app.models.recordings  # noqa: F401
 from app.database import engine, Base
-from app.routers import auth, agents, contacts, calls
+from app.routers import auth, agents, contacts, calls, recordings
 import logging
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -42,6 +43,7 @@ app.include_router(auth.router)
 app.include_router(agents.router)
 app.include_router(contacts.router)
 app.include_router(calls.router)
+app.include_router(recordings.router)
 @app.get("/health")
 async def health_check():
     return {"status": "healthy"}

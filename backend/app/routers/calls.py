@@ -15,36 +15,30 @@ from fastapi.responses import HTMLResponse
 from loguru import logger
 from app.services.twilio_service import (
     DialoutResponse,
-    dialout_request_from_request,
     generate_twiml,
     make_twilio_call,
     parse_twiml_request,
+    verify_agent,
 )
 
 from app.pipelines.mark_one import bot
 from pipecat.runner.types import WebSocketRunnerArguments
 
+from app.dependencies import db_dependency, user_dependency
+from app.schemas.calls import DialoutRequest
 
 router = APIRouter()
 
 
+
 @router.post("/dialout", response_model=DialoutResponse)
-async def handle_dialout_request(request: Request) -> DialoutResponse:
-    """Handle outbound call request and initiate call via Twilio.
-
-    Args:
-        request (Request): FastAPI request containing JSON with 'to_number' and 'from_number'.
-
-    Returns:
-        DialoutResponse: Response containing call_sid, status, and to_number.
-
-    Raises:
-        HTTPException: If request data is invalid or missing required fields.
+async def handle_dialout_request(db: db_dependency, user: user_dependency, dialout_request: DialoutRequest) -> DialoutResponse:
+    """handle outbound call request and initiate call via Twilio.
     """
-    logger.info("Received outbound call request")
+    logger.info(f"Received outbound call request with data: {dialout_request}")
 
-    dialout_request = await dialout_request_from_request(request)
-    call_result = await make_twilio_call(dialout_request)
+    agent = verify_agent(dialout_request.agent_id, db)
+    call_result = await make_twilio_call(user["id"], dialout_request.agent_id, dialout_request.to_number)
 
     return DialoutResponse(
         call_sid=call_result.call_sid,
@@ -63,14 +57,20 @@ async def get_twiml(request: Request) -> HTMLResponse:
 
     Args:
         request (Request): FastAPI request containing Twilio form data with 'To' and 'From'.
+        agent_id (str): Agent id for the outbound call context.
+        user_id (str): Authenticated user id.
 
     Returns:
         HTMLResponse: TwiML XML response with Stream connection instructions.
     """
     logger.info("Serving TwiML for outbound call")
 
+    # Read the params you encoded in the URL during /dialout
+    agent_id = request.query_params.get("agent_id")
+    user_id = request.query_params.get("user_id")
+
     twiml_request = await parse_twiml_request(request)
-    twiml_content = generate_twiml(twiml_request)
+    twiml_content = generate_twiml(twiml_request, agent_id, user_id)
 
     return HTMLResponse(content=twiml_content, media_type="application/xml")
 

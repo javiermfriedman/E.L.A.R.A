@@ -18,6 +18,7 @@ async def add_agent(agent: AgentCreate, db: db_dependency, user: user_dependency
         name=agent.name,
         description=agent.description,
         system_prompt=agent.system_prompt,
+        first_message=agent.first_message,
         voice_id=agent.voice_id,
         owner_id=user["id"],  # comes from the JWT token, not from the request
     )
@@ -33,3 +34,4 @@ async def get_agents(db: db_dependency, user: user_dependency):
     # only return groceries belonging to the logged-in user
     agents = db.query(Agents).filter(Agents.owner_id == user["id"]).all()
     return agents
+

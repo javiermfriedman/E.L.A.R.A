@@ -1,8 +1,13 @@
 from pydantic import BaseModel
 
 class DialoutRequest(BaseModel):
+    agent_id: str
     to_number: str
-    agent_id: int
+
+class TwilioCallRequest(BaseModel):
+    agent_id: str
+    user_id: str
+    to_number: str
 
 class TwilioCallResult(BaseModel):
     call_sid: str
