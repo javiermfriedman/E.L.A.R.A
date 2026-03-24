@@ -1,8 +1,7 @@
-# mark_one.py
-# Core Pipecat pipeline for AI voice calls.
-# Handles STT, LLM, TTS, and call recording.
 
 import os
+import io
+import sys
 import wave
 import datetime
 from pathlib import Path
@@ -13,6 +12,7 @@ from pipecat.audio.vad.silero import SileroVADAnalyzer, VADParams
 from pipecat.pipeline.pipeline import Pipeline
 from pipecat.pipeline.runner import PipelineRunner
 from pipecat.pipeline.task import PipelineParams, PipelineTask
+
 from pipecat.processors.aggregators.llm_context import LLMContext
 from pipecat.processors.aggregators.llm_response_universal import (
     LLMContextAggregatorPair,
@@ -21,37 +21,57 @@ from pipecat.processors.aggregators.llm_response_universal import (
 from pipecat.runner.types import RunnerArguments
 from pipecat.runner.utils import parse_telephony_websocket
 from pipecat.serializers.twilio import TwilioFrameSerializer
+
 from pipecat.services.openai.llm import OpenAILLMService
 from pipecat.services.deepgram.stt import DeepgramSTTService
 from pipecat.services.elevenlabs.tts import ElevenLabsTTSService
 from pipecat.processors.audio.audio_buffer_processor import AudioBufferProcessor
+
+from app.models.recordings import Recording
+
+
 from pipecat.transports.websocket.fastapi import (
     FastAPIWebsocketParams,
     FastAPIWebsocketTransport,
 )
 from pipecat.frames.frames import TTSSpeakFrame
 
+from app.database import get_db
+
 load_dotenv(override=True)
+
+# from core.prompt_nexus import get_system_prompt
+
+# logger.remove()
+# logger.add(
+#     sys.stderr,
+#     level="DEBUG",
+#     filter=lambda record: not record["name"].startswith("pipecat"),
+# )
 
 RECORDINGS_DIR = Path("recordings")
 RECORDINGS_DIR.mkdir(parents=True, exist_ok=True)
 
 
-# ---------------------------------------------------------------------------
-# Helpers
-# ---------------------------------------------------------------------------
-
-def save_wav(filename: Path, audio: bytes, sample_rate: int, num_channels: int) -> None:
-    with wave.open(str(filename), "wb") as wf:
+def get_wav_bytes(audio: bytes, sample_rate: int, num_channels: int) -> bytes:
+    buffer = io.BytesIO()
+    with wave.open(buffer, "wb") as wf:
         wf.setnchannels(num_channels)
         wf.setsampwidth(2)  # 16-bit PCM
         wf.setframerate(sample_rate)
         wf.writeframes(audio)
+    return buffer.getvalue()
 
-
-# ---------------------------------------------------------------------------
-# Pipeline runner
-# ---------------------------------------------------------------------------
+async def save_recording(call_sid: str, track: str, audio: bytes) -> Recording:
+    db = next(get_db())
+    try:
+        recording = Recording(call_sid=call_sid, track=track, audio=audio)
+        db.add(recording)
+        db.commit()
+        db.refresh(recording)
+        return recording
+    finally:
+        db.close()
 
 async def run_bot(
     transport,
@@ -59,21 +79,12 @@ async def run_bot(
     vad: SileroVADAnalyzer,
     call_sid: str,
     to_number: str,
-    system_prompt: str,
-    voice_id: str,
 ):
-    if not voice_id:
-        voice_id = "zmcVlqmyk3Jpn5AVYcAL"
-    if not system_prompt:
-        system_prompt = "You are a helpful assistant."
-
-    logger.info(f"Call SID: {call_sid}")
-    logger.info(f"System prompt: {system_prompt}")
-    logger.info(f"Voice ID: {voice_id}")
-
     llm = OpenAILLMService(
         api_key=os.getenv("OPENAI_API_KEY"),
-        settings=OpenAILLMService.Settings(model="gpt-4"),
+        settings=OpenAILLMService.Settings(
+            model="gpt-4",
+        ),
     )
 
     tts = ElevenLabsTTSService(
@@ -81,10 +92,13 @@ async def run_bot(
         output_format="pcm_8000",
         push_silence_after_stopping=False,
         settings=ElevenLabsTTSService.Settings(
-            voice=voice_id,
+            voice="zmcVlqmyk3Jpn5AVYcAL",
             model="eleven_turbo_v2",
         ),
     )
+
+
+    logger.info("Initializing Deepgram STT service...")
 
     stt = DeepgramSTTService(
         api_key=os.getenv("DEEPGRAM_API_KEY"),
@@ -99,42 +113,59 @@ async def run_bot(
         ),
     )
 
-    # Stereo merged output: user on left, bot on right
+    logger.info("Deepgram STT service initialized")
+
+
+
+    # For Twilio phone calls, 8000 Hz matches your transport.
+    # num_channels=2 => stereo merged output:
+    # user on left, bot on right.
     audiobuffer = AudioBufferProcessor(
         sample_rate=8000,
         num_channels=2,
         enable_turn_audio=False,
     )
 
+    logger.info(f"Call SID: {call_sid}")
+
     @audiobuffer.event_handler("on_audio_data")
     async def on_audio_data(buffer, audio: bytes, sample_rate: int, num_channels: int):
-        timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-        filename = RECORDINGS_DIR / f"{call_sid}_{timestamp}_merged.wav"
-        save_wav(filename, audio, sample_rate, num_channels)
-        logger.info(f"Saved merged recording: {filename}")
+        wav_bytes = get_wav_bytes(audio, sample_rate, num_channels)
+        await save_recording(call_sid, "merged", wav_bytes)
+        logger.info(f"Saved merged call recording for {call_sid}")
 
-    @audiobuffer.event_handler("on_track_audio_data")
-    async def on_track_audio_data(
-        buffer,
-        user_audio: bytes,
-        bot_audio: bytes,
-        sample_rate: int,
-        num_channels: int,
-    ):
-        timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-        user_file = RECORDINGS_DIR / f"{call_sid}_{timestamp}_user.wav"
-        bot_file = RECORDINGS_DIR / f"{call_sid}_{timestamp}_bot.wav"
-        save_wav(user_file, user_audio, sample_rate, 1)
-        save_wav(bot_file, bot_audio, sample_rate, 1)
-        logger.info(f"Saved user track: {user_file}")
-        logger.info(f"Saved bot track: {bot_file}")
+    # @audiobuffer.event_handler("on_track_audio_data")
+    # async def on_track_audio_data(
+    #     buffer,
+    #     user_audio: bytes,
+    #     bot_audio: bytes,
+    #     sample_rate: int,
+    #     num_channels: int,
+    # ):
+    #     timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
 
-    messages = [{"role": "system", "content": system_prompt}]
+    #     user_file = RECORDINGS_DIR / f"{call_sid}_{timestamp}_user.wav"
+    #     bot_file = RECORDINGS_DIR / f"{call_sid}_{timestamp}_bot.wav"
+
+    #     save_wav(user_file, user_audio, sample_rate, 1)
+    #     save_wav(bot_file, bot_audio, sample_rate, 1)
+
+    #     logger.info(f"Saved user track to {user_file}")
+    #     logger.info(f"Saved bot track to {bot_file}")
+
+    messages = [
+        {
+            "role": "system",
+            "content": "you are a helpful assistant",
+        },
+    ]
 
     context = LLMContext(messages=messages)
     user_aggregator, assistant_aggregator = LLMContextAggregatorPair(
         context,
-        user_params=LLMUserAggregatorParams(vad_analyzer=vad),
+        user_params=LLMUserAggregatorParams(
+            vad_analyzer=vad,
+        ),
     )
 
     pipeline = Pipeline(
@@ -145,7 +176,7 @@ async def run_bot(
             llm,
             tts,
             transport.output(),
-            audiobuffer,           # must be after transport.output()
+            audiobuffer,          # must be after transport.output()
             assistant_aggregator,
         ]
     )
@@ -161,7 +192,7 @@ async def run_bot(
 
     @transport.event_handler("on_client_connected")
     async def on_client_connected(transport, client):
-        logger.info("Client connected — outbound call active")
+        logger.info("Client connected - outbound call active")
         await audiobuffer.start_recording()
         await task.queue_frames(
             [TTSSpeakFrame(text="Hello! My name is Elara. How are you today?")]
@@ -169,9 +200,13 @@ async def run_bot(
 
     @transport.event_handler("on_client_disconnected")
     async def on_client_disconnected(transport, client):
-        logger.info("Client disconnected — outbound call ended")
+        logger.info("on_client_disconnected fired")
         try:
+            logger.info("Calling stop_recording...")
             await audiobuffer.stop_recording()
+            logger.info("stop_recording complete")
+        except Exception as e:
+            logger.error(f"Error stopping recording: {e}")
         finally:
             await task.cancel()
 
@@ -179,11 +214,7 @@ async def run_bot(
     await runner.run(task)
 
 
-# ---------------------------------------------------------------------------
-# Bot entrypoint — called directly from calls.py
-# ---------------------------------------------------------------------------
-
-async def bot(runner_args: RunnerArguments, system_prompt: str, voice_id: str):
+async def bot(runner_args: RunnerArguments):
     transport_type, call_data = await parse_telephony_websocket(runner_args.websocket)
 
     body_data = call_data.get("body", {})
@@ -191,7 +222,7 @@ async def bot(runner_args: RunnerArguments, system_prompt: str, voice_id: str):
     from_number = body_data.get("from_number")
     call_sid = call_data["call_id"]
 
-    logger.info(f"Call — To: {to_number}, From: {from_number}")
+    logger.info(f"Call - To: {to_number}, From: {from_number}")
 
     serializer = TwilioFrameSerializer(
         stream_sid=call_data["stream_id"],
@@ -218,12 +249,4 @@ async def bot(runner_args: RunnerArguments, system_prompt: str, voice_id: str):
         ),
     )
 
-    await run_bot(
-        transport,
-        runner_args.handle_sigint,
-        vad,
-        call_sid,
-        to_number,
-        system_prompt,
-        voice_id,
-    )
+    await run_bot(transport, runner_args.handle_sigint, vad, call_sid, to_number)

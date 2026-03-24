@@ -23,3 +23,5 @@ recordings/
 .ruff_cache/
 .coverage
 htmlcov/
+
+*.wav

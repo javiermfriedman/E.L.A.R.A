@@ -1,108 +1,209 @@
-# twilio_service.py
-# Twilio service layer: phone number validation, outbound call creation, and TwiML generation.
-# from_number is read from the FROM_NUMBER environment variable.
+#
+# Copyright (c) 2025, Daily
+#
+# SPDX-License-Identifier: BSD 2-Clause License
+#
 
 import os
-import re
-from urllib.parse import quote
 
 from fastapi import HTTPException, Request
 from loguru import logger
+from pydantic import BaseModel
 from twilio.rest import Client as TwilioClient
 from twilio.twiml.voice_response import Connect, Stream, VoiceResponse
 
-from app.schemas.calls import TwilioCallResult, TwimlRequest, DialoutRequest
+
+class DialoutRequest(BaseModel):
+    """Request data for initiating a dial-out call.
+
+    Add any custom data here needed for the call. For example,
+    you may add customer information, campaign data, or call context.
+
+    Attributes:
+        to_number (str): The phone number to dial (E.164 format recommended).
+        from_number (str): The Twilio phone number to call from (E.164 format).
+    """
+
+    to_number: str
+    from_number: str
 
 
-# ---------------------------------------------------------------------------
-# Validation
-# ---------------------------------------------------------------------------
+class TwilioCallResult(BaseModel):
+    """Result of a Twilio call.
 
-def validate_phone_number(to_number: str):
-    if not to_number.startswith("+1"):
-        raise HTTPException(status_code=400, detail="Number must start with +1")
-    digits_only = re.sub(r"\D", "", to_number)
-    if len(digits_only) != 11:
-        raise HTTPException(status_code=400, detail="Invalid number length")
-    if digits_only[1:4] == "911":
-        raise HTTPException(status_code=400, detail="Cannot call emergency numbers")
+    Attributes:
+        call_sid (str): The unique call SID of the initiated call.
+        to_number (str): The phone number that was dialed.
+    """
+
+    call_sid: str
+    to_number: str
 
 
-# ---------------------------------------------------------------------------
-# Twilio call
-# ---------------------------------------------------------------------------
+class DialoutResponse(BaseModel):
+    """Response from the dialout endpoint.
+
+    Attributes:
+        call_sid (str): The unique call SID of the initiated call.
+        status (str): The status of the call initiation (e.g., "call_initiated").
+        to_number (str): The phone number that was dialed.
+    """
+
+    call_sid: str
+    status: str
+    to_number: str
+
+
+class TwimlRequest(BaseModel):
+    """Request data for generating TwiML.
+
+    Attributes:
+        to_number (str): The phone number being called.
+        from_number (str): The phone number calling from.
+    """
+
+    to_number: str
+    from_number: str
+
+
+async def dialout_request_from_request(request: Request) -> DialoutRequest:
+    """Parse and validate dial-out request data.
+
+    Args:
+        request (Request): FastAPI request object containing JSON with dial-out data.
+
+    Returns:
+        DialoutRequest: Parsed and validated dial-out request.
+
+    Raises:
+        HTTPException: If required fields are missing or request data is invalid.
+    """
+    data = await request.json()
+    try:
+        return DialoutRequest.model_validate(data)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Invalid request data: {str(e)}")
+
 
 async def make_twilio_call(dialout_request: DialoutRequest) -> TwilioCallResult:
-    to_number = dialout_request.to_number
-    from_number = os.getenv("FROM_NUMBER")
+    """Initiate an outbound call via Twilio API.
 
-    if not from_number:
-        raise ValueError("Missing FROM_NUMBER in environment")
+    Creates a Twilio call that will request TwiML from the /twiml endpoint,
+    which then connects the call to the WebSocket endpoint for bot handling.
+
+    Args:
+        dialout_request (DialoutRequest): Object containing call details including
+            to_number and from_number.
+
+    Returns:
+        TwilioCallResult: Result containing the call SID and destination number.
+
+    Raises:
+        ValueError: If required environment variables are missing.
+    """
+    to_number = dialout_request.to_number
+    from_number = dialout_request.from_number
 
     local_server_url = os.getenv("LOCAL_SERVER_URL")
     if not local_server_url:
-        raise ValueError("Missing LOCAL_SERVER_URL in environment")
-
-    account_sid = os.getenv("TWILIO_ACCOUNT_SID")
-    auth_token = os.getenv("TWILIO_AUTH_TOKEN")
-    if not account_sid or not auth_token:
-        raise ValueError("Missing Twilio credentials in environment")
+        raise ValueError("Missing LOCAL_SERVER_URL")
 
     twiml_url = f"{local_server_url}/twiml"
+    account_sid = os.getenv("TWILIO_ACCOUNT_SID")
+    auth_token = os.getenv("TWILIO_AUTH_TOKEN")
+
+    if not account_sid or not auth_token:
+        raise ValueError("Missing Twilio credentials")
+
+    # Create Twilio client and make the call
     client = TwilioClient(account_sid, auth_token)
     call = client.calls.create(to=to_number, from_=from_number, url=twiml_url, method="POST")
 
-    logger.info(f"Twilio call created: {call.sid} → {to_number}")
     return TwilioCallResult(call_sid=call.sid, to_number=to_number)
 
 
-# ---------------------------------------------------------------------------
-# TwiML parsing and generation
-# ---------------------------------------------------------------------------
-
 async def parse_twiml_request(request: Request) -> TwimlRequest:
-    # Twilio sends form data, not JSON (includes CallSid on voice webhooks)
+    """Parse and validate TwiML request data from Twilio.
+
+    Twilio sends webhook data as form-encoded data, not JSON. This function
+    extracts the 'To' and 'From' phone numbers from the form data.
+
+    Args:
+        request (Request): FastAPI request object containing Twilio form data.
+
+    Returns:
+        TwimlRequest: Parsed TwiML request with phone number metadata.
+    """
+    # Twilio sends form data, not JSON
     form_data = await request.form()
     to_number = form_data.get("To")
     from_number = form_data.get("From")
-    call_sid = form_data.get("CallSid")
-    return TwimlRequest(to_number=to_number, from_number=from_number, call_sid=call_sid)
+
+    return TwimlRequest(to_number=to_number, from_number=from_number)
 
 
 def get_websocket_url() -> str:
+    """Get the appropriate WebSocket URL based on environment.
+
+    Returns the local WebSocket URL for local development or the Pipecat Cloud
+    URL for production deployments.
+
+    Returns:
+        str: WebSocket URL (wss://) for Twilio Media Streams to connect to.
+
+    Raises:
+        ValueError: If LOCAL_SERVER_URL is missing in local environment.
+    """
     if os.getenv("ENV", "local").lower() == "local":
         local_server_url = os.getenv("LOCAL_SERVER_URL")
         if not local_server_url:
-            raise ValueError("Missing LOCAL_SERVER_URL in environment")
+            raise ValueError("Missing LOCAL_SERVER_URL")
+        # Convert https:// to wss://
         ws_url = local_server_url.replace("https://", "wss://")
         return f"{ws_url}/ws"
     else:
-        logger.warning("If deployed outside us-west, update the websocket URL below.")
-        return "wss://api.pipecat.daily.co/ws/twilio"
+        print("If deployed in a region other than us-west (default), update websocket url!")
+
+        ws_url = "wss://api.pipecat.daily.co/ws/twilio"
+        # uncomment appropriate region url:
+        # ws_url = wss://us-east.api.pipecat.daily.co/ws/twilio
+        # ws_url = wss://eu-central.api.pipecat.daily.co/ws/twilio
+        # ws_url = wss://ap-south.api.pipecat.daily.co/ws/twilio
+        return ws_url
 
 
 def generate_twiml(twiml_request: TwimlRequest) -> str:
+    """Generate TwiML response with WebSocket Stream connection.
+
+    Creates TwiML that instructs Twilio to connect the call to our WebSocket
+    endpoint. Call metadata (to_number, from_number) is passed as stream
+    parameters, making them available to the bot for customization.
+
+    Args:
+        twiml_request (TwimlRequest): Request containing call metadata (phone numbers).
+
+    Returns:
+        str: TwiML XML string with Stream connection and parameters.
+    """
     websocket_url = get_websocket_url()
-    if twiml_request.call_sid:
-        sep = "&" if "?" in websocket_url else "?"
-        websocket_url = f"{websocket_url}{sep}callSid={quote(twiml_request.call_sid, safe='')}"
-    else:
-        logger.warning(
-            "TwiML webhook missing CallSid; WebSocket will not receive callSid query param"
-        )
     logger.debug(f"Generating TwiML with WebSocket URL: {websocket_url}")
 
+    # Create TwiML response
     response = VoiceResponse()
     connect = Connect()
     stream = Stream(url=websocket_url)
 
+    # Add call metadata as stream parameters so the bot can access them
+    # These will be available in the WebSocket 'start' message
     stream.parameter(name="to_number", value=twiml_request.to_number)
     stream.parameter(name="from_number", value=twiml_request.from_number)
 
+    # Add Pipecat Cloud service host for production
     if os.getenv("ENV") == "production":
         agent_name = os.getenv("AGENT_NAME")
         org_name = os.getenv("ORGANIZATION_NAME")
-        stream.parameter(name="_pipecatCloudServiceHost", value=f"{agent_name}.{org_name}")
+        service_host = f"{agent_name}.{org_name}"
+        stream.parameter(name="_pipecatCloudServiceHost", value=service_host)
 
     connect.append(stream)
     response.append(connect)
