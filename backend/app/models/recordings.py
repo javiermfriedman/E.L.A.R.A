@@ -1,5 +1,5 @@
 from app.database import Base
-from sqlalchemy import Column, Integer, String, LargeBinary, DateTime
+from sqlalchemy import Column, Integer, String, LargeBinary, DateTime, ForeignKey
 import datetime
 
 class Recording(Base):

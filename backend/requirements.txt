@@ -9,6 +9,7 @@ python-jose[cryptography]
 passlib[bcrypt]
 bcrypt==4.0.1
 loguru
-pipecat-ai[websocket,elevenlabs,silero,openai,deepgram,runner]
+pipecat-ai[websocket,elevenlabs,silero,openai,deepgram,runner]==0.0.105
+deepgram-sdk==6.0.1
 twilio
 torch
