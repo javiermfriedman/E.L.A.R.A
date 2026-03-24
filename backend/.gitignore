@@ -1,0 +1,25 @@
+.venv/
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyc
+
+# Local SQLite / dev databases
+*.db
+*.sqlite3
+
+# Runtime logs
+*.log
+
+# Twilio / call recordings (large, user-specific)
+recordings/
+
+# Optional tooling (harmless if unused)
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
