@@ -1,0 +1,149 @@
+.ag {
+  position: fixed;
+  inset: 0;
+  background: var(--color-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  overflow: hidden;
+}
+
+/* Scanning lines */
+.ag__lines {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.ag__line {
+  position: absolute;
+  left: 0; right: 0;
+  height: 1px;
+  background: var(--color-primary);
+  opacity: 0;
+  animation: agLine 2.5s ease forwards;
+}
+
+.ag__line:nth-child(1)  { top: 8%; }
+.ag__line:nth-child(2)  { top: 16%; }
+.ag__line:nth-child(3)  { top: 24%; }
+.ag__line:nth-child(4)  { top: 32%; }
+.ag__line:nth-child(5)  { top: 40%; }
+.ag__line:nth-child(6)  { top: 48%; }
+.ag__line:nth-child(7)  { top: 56%; }
+.ag__line:nth-child(8)  { top: 64%; }
+.ag__line:nth-child(9)  { top: 72%; }
+.ag__line:nth-child(10) { top: 80%; }
+.ag__line:nth-child(11) { top: 88%; }
+.ag__line:nth-child(12) { top: 96%; }
+
+@keyframes agLine {
+  0%   { opacity: 0; box-shadow: none; }
+  20%  { opacity: 0.8; box-shadow: var(--glow-primary); }
+  80%  { opacity: 0.3; }
+  100% { opacity: 0; }
+}
+
+/* Content */
+.ag__content {
+  text-align: center;
+  position: relative;
+  z-index: 1;
+}
+
+.ag__status {
+  font-size: 11px;
+  letter-spacing: 0.3em;
+  color: var(--color-text-dim);
+  text-transform: uppercase;
+  margin-bottom: var(--space-lg);
+  animation: fadeInUp 0.3s ease forwards;
+}
+
+/* Big glitchy ACCESS GRANTED text */
+.ag__text {
+  font-size: clamp(36px, 8vw, 72px);
+  font-weight: 700;
+  color: var(--color-primary);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-shadow: var(--glow-primary-strong);
+  position: relative;
+  animation: agTextReveal 0.5s ease 0.2s both, glitchMain 0.3s ease 0.7s 3;
+}
+
+.ag__text::before,
+.ag__text::after {
+  content: attr(data-text);
+  position: absolute;
+  inset: 0;
+}
+.ag__text::before {
+  color: var(--color-cyan);
+  animation: glitch 0.4s infinite linear;
+  opacity: 0.6;
+}
+.ag__text::after {
+  color: var(--color-amber);
+  animation: glitch 0.4s infinite linear reverse;
+  opacity: 0.4;
+}
+
+@keyframes agTextReveal {
+  from { opacity: 0; letter-spacing: 0.5em; filter: blur(8px); }
+  to   { opacity: 1; letter-spacing: 0.1em; filter: blur(0); }
+}
+
+.ag__sub {
+  font-size: 13px;
+  letter-spacing: 0.4em;
+  color: var(--color-cyan);
+  text-transform: uppercase;
+  text-shadow: var(--glow-cyan);
+  margin-top: var(--space-md);
+  animation: fadeInUp 0.4s ease 0.5s both;
+}
+
+/* Progress bar */
+.ag__bar {
+  width: 300px;
+  height: 2px;
+  background: var(--color-border);
+  margin: var(--space-xl) auto var(--space-lg);
+  overflow: hidden;
+  animation: fadeInUp 0.4s ease 0.6s both;
+}
+
+.ag__bar-fill {
+  height: 100%;
+  background: var(--color-primary);
+  box-shadow: var(--glow-primary);
+  animation: agBarFill 1.8s ease 0.7s both;
+}
+
+@keyframes agBarFill {
+  from { width: 0%; }
+  to   { width: 100%; }
+}
+
+/* Code lines */
+.ag__code {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.ag__code-line {
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  color: var(--color-text-dim);
+  text-transform: uppercase;
+  opacity: 0;
+  animation: fadeInUp 0.3s ease forwards;
+}
+
+.ag__code-line::before {
+  content: '▸ ';
+  color: var(--color-primary);
+}

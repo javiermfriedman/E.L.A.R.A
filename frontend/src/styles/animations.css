@@ -1,0 +1,96 @@
+/* Scanline flicker */
+@keyframes scanline {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100vh); }
+}
+
+/* CRT flicker */
+@keyframes flicker {
+  0%   { opacity: 1; }
+  92%  { opacity: 1; }
+  93%  { opacity: 0.85; }
+  94%  { opacity: 1; }
+  96%  { opacity: 0.9; }
+  100% { opacity: 1; }
+}
+
+/* Glow pulse */
+@keyframes glowPulse {
+  0%, 100% { box-shadow: var(--glow-primary); }
+  50%       { box-shadow: var(--glow-primary-strong); }
+}
+
+/* Text glow pulse */
+@keyframes textGlowPulse {
+  0%, 100% { text-shadow: var(--glow-text); }
+  50%       { text-shadow: 0 0 20px rgba(0, 255, 156, 1), 0 0 40px rgba(0, 255, 156, 0.6); }
+}
+
+/* Glitch effect */
+@keyframes glitch {
+  0%   { clip-path: inset(0 0 98% 0); transform: translate(-4px, 0); }
+  10%  { clip-path: inset(30% 0 50% 0); transform: translate(4px, 0); }
+  20%  { clip-path: inset(60% 0 20% 0); transform: translate(-4px, 0); }
+  30%  { clip-path: inset(80% 0 5% 0);  transform: translate(4px, 0); }
+  40%  { clip-path: inset(40% 0 40% 0); transform: translate(0, 0); }
+  50%  { clip-path: inset(10% 0 70% 0); transform: translate(-2px, 0); }
+  60%  { clip-path: inset(55% 0 25% 0); transform: translate(2px, 0); }
+  70%  { clip-path: inset(75% 0 10% 0); transform: translate(-4px, 0); }
+  80%  { clip-path: inset(20% 0 65% 0); transform: translate(4px, 0); }
+  90%  { clip-path: inset(45% 0 45% 0); transform: translate(-2px, 0); }
+  100% { clip-path: inset(0 0 98% 0);   transform: translate(0, 0); }
+}
+
+@keyframes glitchMain {
+  0%, 89%, 100% { transform: translate(0); filter: none; }
+  90%  { transform: translate(-3px, 1px); filter: hue-rotate(90deg); }
+  92%  { transform: translate(3px, -1px); filter: hue-rotate(-90deg); }
+  94%  { transform: translate(-2px, 2px); filter: brightness(1.5); }
+  96%  { transform: translate(2px, -2px); filter: hue-rotate(45deg); }
+  98%  { transform: translate(-1px, 1px); filter: none; }
+}
+
+/* Fade in up */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Terminal cursor blink */
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+
+/* Boot text reveal */
+@keyframes typeIn {
+  from { width: 0; }
+  to   { width: 100%; }
+}
+
+/* Dashboard fade in */
+@keyframes dashboardReveal {
+  0%   { opacity: 0; filter: brightness(3) blur(4px); }
+  30%  { opacity: 1; filter: brightness(1.5) blur(1px); }
+  100% { opacity: 1; filter: brightness(1) blur(0); }
+}
+
+/* Panel appear stagger */
+@keyframes panelAppear {
+  from { opacity: 0; transform: translateY(12px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Noise grain */
+@keyframes grain {
+  0%, 100% { transform: translate(0, 0); }
+  10%  { transform: translate(-2%, -3%); }
+  20%  { transform: translate(3%, 2%); }
+  30%  { transform: translate(-1%, 4%); }
+  40%  { transform: translate(4%, -1%); }
+  50%  { transform: translate(-3%, 3%); }
+  60%  { transform: translate(2%, -4%); }
+  70%  { transform: translate(-4%, 1%); }
+  80%  { transform: translate(1%, -2%); }
+  90%  { transform: translate(3%, 4%); }
+}

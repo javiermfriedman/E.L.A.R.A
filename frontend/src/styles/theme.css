@@ -1,0 +1,59 @@
+:root {
+  /* Colors */
+  --color-bg: #0a0a0a;
+  --color-bg-panel: #0d0d0d;
+  --color-bg-panel-hover: #111111;
+
+  --color-primary: #00ff9c;
+  --color-primary-dim: #00cc7a;
+  --color-primary-glow: rgba(0, 255, 156, 0.15);
+  --color-primary-glow-strong: rgba(0, 255, 156, 0.35);
+
+  --color-cyan: #00e5ff;
+  --color-cyan-glow: rgba(0, 229, 255, 0.15);
+
+  --color-amber: #ffb300;
+  --color-amber-glow: rgba(255, 179, 0, 0.15);
+
+  --color-red: #ff4444;
+  --color-red-glow: rgba(255, 68, 68, 0.2);
+
+  --color-text: #c8ffe8;
+  --color-text-dim: #5a7a6a;
+  --color-text-muted: #2a4a3a;
+
+  --color-border: rgba(0, 255, 156, 0.2);
+  --color-border-bright: rgba(0, 255, 156, 0.5);
+
+  /* Typography */
+  --font-mono: 'JetBrains Mono', 'IBM Plex Mono', monospace;
+
+  /* Spacing */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+
+  /* Glow effects */
+  --glow-primary: 0 0 8px rgba(0, 255, 156, 0.6), 0 0 20px rgba(0, 255, 156, 0.3);
+  --glow-primary-strong: 0 0 12px rgba(0, 255, 156, 0.9), 0 0 30px rgba(0, 255, 156, 0.5), 0 0 60px rgba(0, 255, 156, 0.2);
+  --glow-cyan: 0 0 8px rgba(0, 229, 255, 0.6), 0 0 20px rgba(0, 229, 255, 0.3);
+  --glow-amber: 0 0 8px rgba(255, 179, 0, 0.6), 0 0 20px rgba(255, 179, 0, 0.3);
+  --glow-red: 0 0 8px rgba(255, 68, 68, 0.6), 0 0 20px rgba(255, 68, 68, 0.3);
+  --glow-text: 0 0 10px rgba(0, 255, 156, 0.8);
+
+  /* Borders */
+  --border-panel: 1px solid var(--color-border);
+  --border-panel-bright: 1px solid var(--color-border-bright);
+
+  /* Radius */
+  --radius-sm: 2px;
+  --radius-md: 4px;
+
+  /* Transitions */
+  --transition-fast: 80ms ease;
+  --transition-med: 200ms ease;
+  --transition-slow: 400ms ease;
+}
