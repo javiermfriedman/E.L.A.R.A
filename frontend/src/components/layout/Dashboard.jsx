@@ -2,7 +2,8 @@ import "./Dashboard.css";
 import TopBar from "./TopBar";
 import LeftStrip from "./LeftStrip";
 import Contacts from "../../panels/Contacts/Contacts";
-import { useState } from "react";
+import Agents from "../../panels/Agents/Agents";
+import { useState, useEffect } from "react";
 
 function Panel({ label, style }) {
   return (
@@ -29,6 +30,14 @@ function Panel({ label, style }) {
 export default function Dashboard({ onLogout }) {
   const [selectedContact, setSelectedContact] = useState(null);
   const [selectedAgent, setSelectedAgent] = useState(null);
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    const token = localStorage.getItem("elara_token");
+    if (token) setReady(true);
+  }, []);
+
+  if (!ready) return null;
 
   return (
     <div className="dashboard">
@@ -54,7 +63,7 @@ export default function Dashboard({ onLogout }) {
         />
       </div>
       <div className="dashboard__agents">
-        <Panel label="◈ Agents" />
+        <Agents selectedId={selectedAgent?.id} onSelect={setSelectedAgent} />
       </div>
       <div className="dashboard__recentcalls">
         <Panel label="◈ Recent Calls" />

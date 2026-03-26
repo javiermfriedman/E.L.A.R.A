@@ -26,7 +26,7 @@ async function request(path, options = {}) {
   };
 
   if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
+    headers["Authorization"] = `Bearer ${token}`;
   }
 
   const res = await fetch(`${BASE_URL}${path}`, {
@@ -80,9 +80,6 @@ export async function login(username, password) {
 
 // ─── Future endpoints (ready to fill in) ─────────────────────
 // Agents
-export async function getAgents() {
-  return request("/agents/");
-}
 
 // Calls
 export async function getCalls() {
@@ -91,13 +88,36 @@ export async function getCalls() {
 
 // Contacts
 export async function getContacts() {
-  return request('/contacts/')
+  return request("/contacts/");
 }
 
 export async function createContact(name, phone_number) {
-  return request('/contacts/', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+  return request("/contacts/", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ name, phone_number }),
-  })
+  });
+}
+
+export async function getAgents() {
+  return request("/agents/");
+}
+
+export async function createAgent(formData) {
+  const token = getToken();
+  const res = await fetch(`${BASE_URL}/agents/`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      // DO NOT set Content-Type — browser sets it with boundary for multipart
+    },
+    body: formData,
+  });
+
+  if (!res.ok) {
+    const error = await res.json().catch(() => ({ detail: "Unknown error" }));
+    throw new Error(error.detail || "Failed to create agent");
+  }
+
+  return res.json();
 }
