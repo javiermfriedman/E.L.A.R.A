@@ -11,6 +11,7 @@ class AgentResponse(BaseModel):
     name: str
     description: str
     system_prompt: str
+    first_message: str
     voice_id: str | None
     image: str | None
     created_at: datetime

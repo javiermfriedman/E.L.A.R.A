@@ -23,6 +23,7 @@ async def add_agent(
     name: str = Form(...),
     description: str = Form(...),
     system_prompt: str = Form(...),
+    first_message: str = Form(...),
     voice_id: str = Form("zmcVlqmyk3Jpn5AVYcAL"),
     image: UploadFile = File(...),
 ):
@@ -39,6 +40,7 @@ async def add_agent(
         name=name,
         description=description,
         system_prompt=system_prompt,
+        first_message=first_message,
         voice_id=voice_id,
         image_data=image_bytes,
         image_filename=image.filename,

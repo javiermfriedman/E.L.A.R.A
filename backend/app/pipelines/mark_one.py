@@ -7,6 +7,7 @@ import datetime
 from pathlib import Path
 
 from dotenv import load_dotenv
+from fastapi import HTTPException
 from loguru import logger
 from pipecat.audio.vad.silero import SileroVADAnalyzer, VADParams
 from pipecat.pipeline.pipeline import Pipeline
@@ -27,7 +28,7 @@ from pipecat.services.deepgram.stt import DeepgramSTTService
 from pipecat.services.elevenlabs.tts import ElevenLabsTTSService
 from pipecat.processors.audio.audio_buffer_processor import AudioBufferProcessor
 
-from app.models.recordings import Recording
+from app.models.recordings import Recordings
 
 
 from pipecat.transports.websocket.fastapi import (
@@ -37,6 +38,7 @@ from pipecat.transports.websocket.fastapi import (
 from pipecat.frames.frames import TTSSpeakFrame
 
 from app.database import get_db
+from app.models.agents import Agents
 
 load_dotenv(override=True)
 
@@ -62,10 +64,18 @@ def get_wav_bytes(audio: bytes, sample_rate: int, num_channels: int) -> bytes:
         wf.writeframes(audio)
     return buffer.getvalue()
 
-async def save_recording(call_sid: str, track: str, audio: bytes) -> Recording:
+async def save_recording(user_id: int, audio: bytes) -> Recordings:
+    # 1. Save to local recordings dir
+    timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+    filename = f"recording_{user_id}_{timestamp}.wav"
+    file_path = RECORDINGS_DIR / filename
+    with open(file_path, "wb") as f:
+        f.write(audio)
+    logger.info(f"Saved recording locally to {file_path}")
+    
     db = next(get_db())
     try:
-        recording = Recording(call_sid=call_sid, track=track, audio=audio)
+        recording = Recordings(user_id=user_id, audio=audio)
         db.add(recording)
         db.commit()
         db.refresh(recording)
@@ -77,8 +87,9 @@ async def run_bot(
     transport,
     handle_sigint: bool,
     vad: SileroVADAnalyzer,
-    call_sid: str,
-    to_number: str,
+    system_prompt: str,
+    first_message: str,
+    user_id: int,
 ):
     llm = OpenAILLMService(
         api_key=os.getenv("OPENAI_API_KEY"),
@@ -116,48 +127,25 @@ async def run_bot(
     logger.info("Deepgram STT service initialized")
 
 
-
-    # For Twilio phone calls, 8000 Hz matches your transport.
-    # num_channels=2 => stereo merged output:
-    # user on left, bot on right.
     audiobuffer = AudioBufferProcessor(
         sample_rate=8000,
         num_channels=2,
         enable_turn_audio=False,
     )
 
-    logger.info(f"Call SID: {call_sid}")
+    logger.info(f"System Prompt: {system_prompt}, User ID: {user_id}")
 
     @audiobuffer.event_handler("on_audio_data")
     async def on_audio_data(buffer, audio: bytes, sample_rate: int, num_channels: int):
         wav_bytes = get_wav_bytes(audio, sample_rate, num_channels)
-        await save_recording(call_sid, "merged", wav_bytes)
-        logger.info(f"Saved merged call recording for {call_sid}")
-
-    # @audiobuffer.event_handler("on_track_audio_data")
-    # async def on_track_audio_data(
-    #     buffer,
-    #     user_audio: bytes,
-    #     bot_audio: bytes,
-    #     sample_rate: int,
-    #     num_channels: int,
-    # ):
-    #     timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-
-    #     user_file = RECORDINGS_DIR / f"{call_sid}_{timestamp}_user.wav"
-    #     bot_file = RECORDINGS_DIR / f"{call_sid}_{timestamp}_bot.wav"
-
-    #     save_wav(user_file, user_audio, sample_rate, 1)
-    #     save_wav(bot_file, bot_audio, sample_rate, 1)
-
-    #     logger.info(f"Saved user track to {user_file}")
-    #     logger.info(f"Saved bot track to {bot_file}")
+        await save_recording(user_id, wav_bytes)
+        logger.info(f"Saved recording for user {user_id}")
 
     messages = [
         {
             "role": "system",
-            "content": "you are a helpful assistant",
-        },
+            "content": system_prompt,
+        },  
     ]
 
     context = LLMContext(messages=messages)
@@ -195,7 +183,7 @@ async def run_bot(
         logger.info("Client connected - outbound call active")
         await audiobuffer.start_recording()
         await task.queue_frames(
-            [TTSSpeakFrame(text="Hello! My name is Elara. How are you today?")]
+            [TTSSpeakFrame(text=first_message)]
         )
 
     @transport.event_handler("on_client_disconnected")
@@ -220,9 +208,10 @@ async def bot(runner_args: RunnerArguments):
     body_data = call_data.get("body", {})
     to_number = body_data.get("to_number")
     from_number = body_data.get("from_number")
-    call_sid = call_data["call_id"]
+    agent_id = body_data.get("agent_id")    # <-- add this
+    user_id = body_data.get("user_id")      # <-- add this
 
-    logger.info(f"Call - To: {to_number}, From: {from_number}")
+    logger.info(f"Call - To: {to_number}, From: {from_number}, Agent ID: {agent_id}, User ID: {user_id}")
 
     serializer = TwilioFrameSerializer(
         stream_sid=call_data["stream_id"],
@@ -248,5 +237,12 @@ async def bot(runner_args: RunnerArguments):
             serializer=serializer,
         ),
     )
-
-    await run_bot(transport, runner_args.handle_sigint, vad, call_sid, to_number)
+    db = next(get_db())
+    agent = db.query(Agents).filter(Agents.id == agent_id).filter(Agents.owner_id == user_id).first()
+    if not agent:
+        logger.error(f"Agent not found for user {user_id} and agent  {agent_id}")
+        raise HTTPException(status_code=404, detail="Agent not found")
+    
+    system_prompt = agent.system_prompt
+    first_message = agent.first_message
+    await run_bot(transport, runner_args.handle_sigint, vad, system_prompt, first_message, user_id)
