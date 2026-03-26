@@ -91,12 +91,22 @@ export async function getContacts() {
   return request("/contacts/");
 }
 
-export async function createContact(name, phone_number) {
-  return request("/contacts/", {
+export async function createContact(formData) {
+  const token = getToken();
+  const res = await fetch(`${BASE_URL}/contacts/`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ name, phone_number }),
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    body: formData,
   });
+
+  if (!res.ok) {
+    const error = await res.json().catch(() => ({ detail: "Unknown error" }));
+    throw new Error(error.detail || "Failed to create contact");
+  }
+
+  return res.json();
 }
 
 export async function getAgents() {

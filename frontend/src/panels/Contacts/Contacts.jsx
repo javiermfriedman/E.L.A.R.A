@@ -1,26 +1,41 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import PanelWrapper from "../../components/ui/PanelWrapper";
 import { getContacts, createContact } from "../../services/api";
 import "./Contacts.css";
 
 function AddTargetModal({ onClose, onAdded }) {
   const [form, setForm] = useState({ name: "", phone_number: "" });
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const fileInputRef = useRef();
 
   function handleChange(e) {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
     setError("");
   }
 
+  function handleImage(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    setImageFile(file);
+    setImagePreview(URL.createObjectURL(file));
+  }
+
   async function handleSubmit() {
-    if (!form.name || !form.phone_number) {
-      setError("⚠ ALL FIELDS REQUIRED");
+    if (!form.name || !form.phone_number || !imageFile) {
+      setError("⚠ ALL FIELDS + IMAGE REQUIRED");
       return;
     }
     setLoading(true);
     try {
-      const newContact = await createContact(form.name, form.phone_number);
+      const fd = new FormData();
+      fd.append("name", form.name);
+      fd.append("phone_number", form.phone_number);
+      fd.append("image", imageFile);
+
+      const newContact = await createContact(fd);
       onAdded(newContact);
       onClose();
     } catch (err) {
@@ -41,6 +56,38 @@ function AddTargetModal({ onClose, onAdded }) {
         </div>
 
         <div className="modal__body">
+          {/* Image upload */}
+          <div className="modal-image-upload">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/png,image/jpeg,image/webp"
+              className="modal-image-upload__file"
+              onChange={handleImage}
+            />
+            {imagePreview ? (
+              <img
+                src={imagePreview}
+                className="modal-image-upload__preview"
+                alt="preview"
+              />
+            ) : (
+              <div
+                className="modal-image-upload__placeholder"
+                onClick={() => fileInputRef.current.click()}
+              >
+                ＋
+              </div>
+            )}
+            <div
+              className="modal-image-upload__label"
+              onClick={() => fileInputRef.current.click()}
+            >
+              {imagePreview ? "[ change photo ]" : "[ upload target photo ]"}
+            </div>
+          </div>
+
+          {/* Name */}
           <div className="modal-field">
             <label className="modal-field__label">Target Codename</label>
             <div className="modal-field__input-wrap">
@@ -58,6 +105,7 @@ function AddTargetModal({ onClose, onAdded }) {
             </div>
           </div>
 
+          {/* Phone */}
           <div className="modal-field">
             <label className="modal-field__label">Comms Channel (Phone)</label>
             <div className="modal-field__input-wrap">
@@ -103,7 +151,6 @@ export default function Contacts({ selectedId, onSelect }) {
     async function load() {
       const token = localStorage.getItem("elara_token");
       if (!token) return;
-
       try {
         const data = await getContacts();
         setContacts(data);
@@ -146,7 +193,16 @@ export default function Contacts({ selectedId, onSelect }) {
                   className={`contact-item ${selectedId === contact.id ? "selected" : ""}`}
                   onClick={() => onSelect(contact)}
                 >
-                  <div className="contact-item__left">
+                  {contact.image ? (
+                    <img
+                      src={`data:image/png;base64,${contact.image}`}
+                      alt={contact.name}
+                      className="contact-item__avatar"
+                    />
+                  ) : (
+                    <div className="contact-item__avatar-placeholder">👤</div>
+                  )}
+                  <div className="contact-item__info">
                     <div className="contact-item__name">{contact.name}</div>
                     <div className="contact-item__phone">
                       {contact.phone_number}

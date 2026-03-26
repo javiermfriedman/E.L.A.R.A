@@ -26,17 +26,16 @@
   opacity: 0.3;
 }
 
-/* Contact item */
+/* ── Contact card ──────────────────────────── */
 .contact-item {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: var(--space-sm) var(--space-md);
+  gap: var(--space-md);
+  padding: var(--space-sm);
   border: 1px solid var(--color-border);
   background: transparent;
   cursor: pointer;
   transition: all var(--transition-med);
-  gap: var(--space-sm);
   border-radius: var(--radius-sm);
   width: 100%;
   text-align: left;
@@ -54,10 +53,41 @@
   box-shadow: var(--glow-primary);
 }
 
-.contact-item__left {
+/* Avatar */
+.contact-item__avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.contact-item.selected .contact-item__avatar {
+  border-color: var(--color-primary);
+  box-shadow: var(--glow-primary);
+}
+
+.contact-item__avatar-placeholder {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  background: var(--color-text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+  color: var(--color-text-dim);
+}
+
+/* Info */
+.contact-item__info {
+  flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 3px;
   min-width: 0;
 }
 
@@ -83,6 +113,7 @@
   letter-spacing: 0.1em;
 }
 
+/* Badge */
 .contact-item__badge {
   font-size: 8px;
   letter-spacing: 0.15em;
@@ -112,7 +143,6 @@
   backdrop-filter: blur(2px);
 }
 
-/* Modal box */
 .modal {
   width: 100%;
   max-width: 400px;
@@ -188,7 +218,6 @@
   gap: var(--space-lg);
 }
 
-/* Modal form fields */
 .modal-field {
   display: flex;
   flex-direction: column;
@@ -318,4 +347,55 @@
   opacity: 0.5;
   cursor: not-allowed;
   animation: none;
+}
+
+/* ── Image upload ──────────────────────────── */
+.modal-image-upload {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.modal-image-upload__preview {
+  width: 72px;
+  height: 72px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  object-fit: cover;
+}
+
+.modal-image-upload__placeholder {
+  width: 72px;
+  height: 72px;
+  border-radius: var(--radius-sm);
+  border: 1px dashed var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition: all var(--transition-med);
+}
+
+.modal-image-upload__placeholder:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.modal-image-upload__file {
+  display: none;
+}
+
+.modal-image-upload__label {
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  color: var(--color-text-dim);
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.modal-image-upload__label:hover {
+  color: var(--color-primary);
 }
