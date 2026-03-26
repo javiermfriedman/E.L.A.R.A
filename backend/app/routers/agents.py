@@ -1,7 +1,4 @@
-from io import BytesIO
-
 from fastapi import APIRouter, File, Form, HTTPException, UploadFile
-from PIL import Image
 from starlette import status
 
 from app.dependencies import db_dependency, user_dependency
@@ -9,13 +6,14 @@ from app.models.agents import Agents
 from app.schemas.agents import AgentResponse
 from loguru import logger
 
+from app.services.image_preprocess import crop_and_resize
+
 router = APIRouter(
     prefix="/agents",
     tags=["agents"],
 )
 
 ALLOWED_CONTENT_TYPES = {"image/png", "image/jpeg", "image/webp"}
-AVATAR_SIZE = 256  # all agent images are stored as 256×256 PNG
 
 # expects a png or jpg image file
 @router.post("/", status_code=status.HTTP_201_CREATED, response_model=AgentResponse)
@@ -57,21 +55,3 @@ async def add_agent(
 async def get_agents(db: db_dependency, user: user_dependency):
     agents = db.query(Agents).filter(Agents.owner_id == user["id"]).all()
     return agents
-
-
-
-def crop_and_resize(raw_bytes: bytes) -> bytes:
-    """Center-crop to a square, resize to AVATAR_SIZE×AVATAR_SIZE, return PNG bytes."""
-    img = Image.open(BytesIO(raw_bytes))
-    img = img.convert("RGBA")
-
-    w, h = img.size
-    side = min(w, h)
-    left = (w - side) // 2
-    top = (h - side) // 2
-    img = img.crop((left, top, left + side, top + side))
-    img = img.resize((AVATAR_SIZE, AVATAR_SIZE), Image.LANCZOS)
-
-    buf = BytesIO()
-    img.save(buf, format="PNG")
-    return buf.getvalue()
