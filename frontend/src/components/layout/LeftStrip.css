@@ -1,0 +1,292 @@
+.leftstrip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: var(--space-sm) 0;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-panel);
+  height: 100%;
+  overflow: hidden;
+  gap: var(--space-sm);
+  position: relative;
+}
+
+/* Accent line */
+.leftstrip::after {
+  content: '';
+  position: absolute;
+  top: 0; bottom: 0; right: 0;
+  width: 1px;
+  background: linear-gradient(180deg, transparent, var(--color-primary), transparent);
+  opacity: 0.3;
+}
+
+/* ── Section divider ───────────────────────── */
+.ls-divider {
+  width: 48px;
+  height: 1px;
+  background: var(--color-border);
+  flex-shrink: 0;
+}
+
+/* ── Logo ──────────────────────────────────── */
+.ls-logo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding-top: var(--space-xs);
+}
+.ls-logo__name {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  color: var(--color-primary);
+  text-shadow: var(--glow-text);
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  text-transform: uppercase;
+  animation: textGlowPulse 3s ease-in-out infinite;
+}
+.ls-logo__sub {
+  font-size: 7px;
+  letter-spacing: 0.15em;
+  color: var(--color-text-dim);
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  text-transform: uppercase;
+}
+
+/* ── Home button ───────────────────────────── */
+.ls-home {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  background: transparent;
+  border: 1px solid var(--color-border);
+  color: var(--color-text-dim);
+  width: 40px;
+  padding: var(--space-xs) 0;
+  cursor: pointer;
+  transition: all var(--transition-med);
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+}
+.ls-home:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  box-shadow: var(--glow-primary);
+  background: var(--color-primary-glow);
+}
+.ls-home__icon { font-size: 13px; }
+.ls-home__label {
+  font-size: 7px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+/* ── Metric bars ───────────────────────────── */
+.ls-metrics {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-sm);
+  width: 100%;
+  padding: 0 var(--space-sm);
+}
+.ls-metric {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  align-items: center;
+}
+.ls-metric__label {
+  font-size: 7px;
+  letter-spacing: 0.2em;
+  color: var(--color-text-dim);
+  text-transform: uppercase;
+}
+.ls-metric__track {
+  width: 48px;
+  height: 4px;
+  background: var(--color-text-muted);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.ls-metric__fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 1s ease;
+}
+.ls-metric__fill--green {
+  background: var(--color-primary);
+  box-shadow: var(--glow-primary);
+}
+.ls-metric__fill--amber {
+  background: var(--color-amber);
+  box-shadow: var(--glow-amber);
+}
+.ls-metric__fill--red {
+  background: var(--color-red);
+  box-shadow: var(--glow-red);
+}
+.ls-metric__value {
+  font-size: 8px;
+  color: var(--color-text-dim);
+  letter-spacing: 0.1em;
+}
+
+/* ── Waveform ──────────────────────────────── */
+.ls-wave {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  flex: 1;
+  justify-content: center;
+  min-height: 60px;
+}
+.ls-wave__bar {
+  width: 32px;
+  height: 2px;
+  background: var(--color-primary);
+  border-radius: 1px;
+  opacity: 0.5;
+  animation: waveBar 1.4s ease-in-out infinite;
+}
+@keyframes waveBar {
+  0%, 100% { transform: scaleX(0.2); opacity: 0.2; }
+  50%       { transform: scaleX(1);   opacity: 0.7; }
+}
+
+/* ── Hex scroll ────────────────────────────── */
+.ls-hex {
+  width: 56px;
+  height: 52px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  mask-image: linear-gradient(180deg, transparent, black 20%, black 80%, transparent);
+}
+.ls-hex__line {
+  font-size: 7px;
+  color: var(--color-text-muted);
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+  animation: hexScroll 3s linear infinite;
+  text-align: center;
+}
+@keyframes hexScroll {
+  0%   { opacity: 0.2; color: var(--color-text-muted); }
+  50%  { opacity: 0.8; color: var(--color-primary); }
+  100% { opacity: 0.2; color: var(--color-text-muted); }
+}
+
+/* ── Coordinates ───────────────────────────── */
+.ls-coords {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+.ls-coords__label {
+  font-size: 7px;
+  letter-spacing: 0.15em;
+  color: var(--color-text-dim);
+  text-transform: uppercase;
+}
+.ls-coords__value {
+  font-size: 7px;
+  color: var(--color-cyan);
+  text-shadow: var(--glow-cyan);
+  letter-spacing: 0.05em;
+  text-align: center;
+}
+
+/* ── Status indicators ─────────────────────── */
+.ls-status {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: flex-start;
+  width: 56px;
+  padding: 0 var(--space-sm);
+}
+.ls-status__row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.ls-status__dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.ls-status__dot--green {
+  background: var(--color-primary);
+  box-shadow: var(--glow-primary);
+  animation: glowPulse 2s infinite;
+}
+.ls-status__dot--amber {
+  background: var(--color-amber);
+  box-shadow: var(--glow-amber);
+  animation: glowPulse 2.5s infinite;
+}
+.ls-status__dot--cyan {
+  background: var(--color-cyan);
+  box-shadow: var(--glow-cyan);
+  animation: glowPulse 3s infinite;
+}
+.ls-status__text {
+  font-size: 7px;
+  letter-spacing: 0.15em;
+  color: var(--color-text-dim);
+  text-transform: uppercase;
+}
+
+/* ── Operatives ────────────────────────────── */
+.ls-operatives {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+.ls-operatives__label {
+  font-size: 7px;
+  letter-spacing: 0.15em;
+  color: var(--color-text-dim);
+  text-transform: uppercase;
+}
+.ls-operatives__value {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-primary);
+  text-shadow: var(--glow-text);
+  letter-spacing: 0.1em;
+}
+
+/* ── Countdown ─────────────────────────────── */
+.ls-countdown {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding-bottom: var(--space-xs);
+}
+.ls-countdown__label {
+  font-size: 7px;
+  letter-spacing: 0.12em;
+  color: var(--color-text-dim);
+  text-transform: uppercase;
+}
+.ls-countdown__value {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--color-amber);
+  text-shadow: var(--glow-amber);
+  letter-spacing: 0.1em;
+}

@@ -1,0 +1,235 @@
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--space-sm);
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-panel);
+  height: 100%;
+  gap: var(--space-sm);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Subtle top accent line */
+.topbar::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--color-primary), var(--color-cyan), var(--color-primary), transparent);
+  opacity: 0.6;
+}
+
+/* ── Zones ─────────────────────────────────── */
+.topbar__left,
+.topbar__center,
+.topbar__right {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.topbar__left   { flex: 0 0 auto; gap: var(--space-md); }
+.topbar__center { flex: 1; justify-content: center; min-width: 0; overflow: hidden; }
+.topbar__right  { flex: 0 0 auto; gap: var(--space-md); }
+
+/* ── Dividers ──────────────────────────────── */
+.topbar__sep {
+  width: 1px;
+  height: 24px;
+  background: var(--color-border);
+  flex-shrink: 0;
+}
+
+/* ── Logo block ────────────────────────────── */
+.topbar__logo {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.topbar__logo-name {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  color: var(--color-primary);
+  text-shadow: var(--glow-text);
+  text-transform: uppercase;
+  animation: textGlowPulse 3s ease-in-out infinite;
+  white-space: nowrap;
+}
+.topbar__logo-sub {
+  font-size: 8px;
+  letter-spacing: 0.2em;
+  color: var(--color-text-dim);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* ── Operative block ───────────────────────── */
+.topbar__operative {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.topbar__operative-label {
+  font-size: 8px;
+  letter-spacing: 0.2em;
+  color: var(--color-text-dim);
+  text-transform: uppercase;
+}
+.topbar__operative-value {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  color: var(--color-cyan);
+  text-shadow: var(--glow-cyan);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* ── Access level ──────────────────────────── */
+.topbar__access {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.topbar__access-label {
+  font-size: 8px;
+  letter-spacing: 0.2em;
+  color: var(--color-text-dim);
+  text-transform: uppercase;
+}
+.topbar__access-value {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  color: var(--color-amber);
+  text-shadow: var(--glow-amber);
+  text-transform: uppercase;
+  animation: blink 2s step-end infinite;
+  white-space: nowrap;
+}
+
+/* ── Center title ──────────────────────────── */
+.topbar__title-wrap {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  overflow: hidden;
+  width: 100%;
+}
+.topbar__title-line {
+  flex: 1;
+  height: 1px;
+  min-width: 20px;
+  background: linear-gradient(90deg, transparent, var(--color-border));
+}
+.topbar__title-line--right {
+  background: linear-gradient(90deg, var(--color-border), transparent);
+}
+.topbar__title {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.3em;
+  color: var(--color-text-dim);
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Threat level ──────────────────────────── */
+.topbar__threat {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.topbar__threat-label {
+  font-size: 8px;
+  letter-spacing: 0.2em;
+  color: var(--color-text-dim);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.topbar__threat-bar {
+  display: flex;
+  gap: 2px;
+}
+.topbar__threat-seg {
+  width: 8px;
+  height: 6px;
+  border-radius: 1px;
+  background: var(--color-text-muted);
+  transition: background 0.5s ease;
+}
+.topbar__threat-seg.active-green { background: var(--color-primary); box-shadow: var(--glow-primary); }
+.topbar__threat-seg.active-amber { background: var(--color-amber);   box-shadow: var(--glow-amber); }
+.topbar__threat-seg.active-red   { background: var(--color-red);     box-shadow: var(--glow-red); }
+
+/* ── Mission counter ───────────────────────── */
+.topbar__missions {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.topbar__missions-label {
+  font-size: 8px;
+  letter-spacing: 0.2em;
+  color: var(--color-text-dim);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.topbar__missions-value {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--color-primary);
+  text-shadow: var(--glow-text);
+}
+
+/* ── Ping ──────────────────────────────────── */
+.topbar__ping {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.topbar__ping-label {
+  font-size: 8px;
+  letter-spacing: 0.2em;
+  color: var(--color-text-dim);
+  text-transform: uppercase;
+}
+.topbar__ping-value {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--color-cyan);
+  text-shadow: var(--glow-cyan);
+  letter-spacing: 0.1em;
+  white-space: nowrap;
+}
+
+/* ── Clock ─────────────────────────────────── */
+.topbar__clock-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  align-items: flex-end;
+}
+.topbar__clock-label {
+  font-size: 8px;
+  letter-spacing: 0.2em;
+  color: var(--color-text-dim);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.topbar__clock {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-primary);
+  text-shadow: var(--glow-text);
+  letter-spacing: 0.15em;
+  min-width: 72px;
+  text-align: right;
+  white-space: nowrap;
+}

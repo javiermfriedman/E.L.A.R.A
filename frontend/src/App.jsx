@@ -1,12 +1,17 @@
 import { useState } from "react";
 import { ElaraProvider } from "./context/ElaraContext";
-import { isAuthenticated } from "./services/api";
-import Login from "./pages/Login/Login";
+import { isAuthenticated, removeToken } from "./services/api";
+import Login from "./pages/login/Login";
 import AccessGranted from "./components/layout/AccessGranted";
+import Dashboard from "./components/layout/Dashboard";
 
 export default function App() {
-  // If token already exists, skip straight to dashboard
   const [phase, setPhase] = useState(isAuthenticated() ? "dashboard" : "login");
+
+  function handleLogout() {
+    removeToken();
+    setPhase("login");
+  }
 
   return (
     <ElaraProvider>
@@ -14,11 +19,7 @@ export default function App() {
       {phase === "access" && (
         <AccessGranted onComplete={() => setPhase("dashboard")} />
       )}
-      {phase === "dashboard" && (
-        <div style={{ color: "var(--color-primary)", padding: "2rem" }}>
-          DASHBOARD COMING SOON
-        </div>
-      )}
+      {phase === "dashboard" && <Dashboard onLogout={handleLogout} />}
     </ElaraProvider>
   );
 }
