@@ -9,6 +9,6 @@ class Contacts(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     owner_id = Column(Integer, ForeignKey("users.id"))
-    name = Column(String, unique=True)
+    name = Column(String)
     phone_number = Column(String)
     created_at = Column(DateTime, default=datetime.now)

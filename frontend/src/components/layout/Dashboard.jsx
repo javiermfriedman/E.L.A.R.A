@@ -1,8 +1,9 @@
 import "./Dashboard.css";
 import TopBar from "./TopBar";
 import LeftStrip from "./LeftStrip";
+import Contacts from "../../panels/Contacts/Contacts";
+import { useState } from "react";
 
-// Temporary placeholders
 function Panel({ label, style }) {
   return (
     <div
@@ -26,6 +27,9 @@ function Panel({ label, style }) {
 }
 
 export default function Dashboard({ onLogout }) {
+  const [selectedContact, setSelectedContact] = useState(null);
+  const [selectedAgent, setSelectedAgent] = useState(null);
+
   return (
     <div className="dashboard">
       <div className="dashboard__topbar">
@@ -35,7 +39,10 @@ export default function Dashboard({ onLogout }) {
         <LeftStrip onLogout={onLogout} />
       </div>
       <div className="dashboard__contacts">
-        <Panel label="◈ Contacts" />
+        <Contacts
+          selectedId={selectedContact?.id}
+          onSelect={setSelectedContact}
+        />
       </div>
       <div className="dashboard__hero">
         <Panel

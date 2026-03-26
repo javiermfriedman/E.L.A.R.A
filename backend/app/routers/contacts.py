@@ -31,3 +31,4 @@ async def get_contacts(db: db_dependency, user: user_dependency):
     # only return groceries belonging to the logged-in user
     contacts = db.query(Contacts).filter(Contacts.owner_id == user["id"]).all()
     return contacts
+

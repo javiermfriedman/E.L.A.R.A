@@ -26,7 +26,7 @@ async function request(path, options = {}) {
   };
 
   if (token) {
-    headers["Authorization"] = `Bearer ${token}`;
+    headers['Authorization'] = `Bearer ${token}`;
   }
 
   const res = await fetch(`${BASE_URL}${path}`, {
@@ -84,12 +84,20 @@ export async function getAgents() {
   return request("/agents/");
 }
 
-// Contacts
-export async function getContacts() {
-  return request("/contacts/");
-}
-
 // Calls
 export async function getCalls() {
   return request("/calls/");
+}
+
+// Contacts
+export async function getContacts() {
+  return request('/contacts/')
+}
+
+export async function createContact(name, phone_number) {
+  return request('/contacts/', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name, phone_number }),
+  })
 }
