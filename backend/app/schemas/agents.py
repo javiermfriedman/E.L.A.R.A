@@ -1,16 +1,7 @@
 from datetime import datetime
 
+from fastapi import UploadFile
 from pydantic import BaseModel, ConfigDict, Field
-
-
-class AgentCreate(BaseModel):
-    name: str
-    description: str
-    system_prompt: str
-    voice_id: str = Field(
-        default="zmcVlqmyk3Jpn5AVYcAL",
-        description="ElevenLabs voice id; defaults to project default if omitted",
-    )
 
 
 class AgentResponse(BaseModel):
@@ -21,4 +12,5 @@ class AgentResponse(BaseModel):
     description: str
     system_prompt: str
     voice_id: str | None
+    image: str | None
     created_at: datetime
