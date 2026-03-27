@@ -82,10 +82,9 @@ export async function login(username, password) {
 // Agents
 
 // Calls
-export async function getCalls() {
-  return request("/calls/");
+export async function getRecordings() {
+  return request("/recordings/");
 }
-
 // Contacts
 export async function getContacts() {
   return request("/contacts/");
@@ -148,4 +147,14 @@ export async function cancelCall(call_sid) {
   return request(`/call/cancel?call_sid=${call_sid}`, {
     method: "POST",
   });
+}
+
+export async function getRecordingAudio(recordingId) {
+  const token = getToken();
+  const res = await fetch(`${BASE_URL}/recordings/${recordingId}/audio`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) throw new Error("Failed to fetch audio");
+  const blob = await res.blob();
+  return URL.createObjectURL(blob);
 }

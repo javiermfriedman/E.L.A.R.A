@@ -20,8 +20,8 @@
 
 .dashboard__topbar     { grid-area: topbar; }
 .dashboard__leftstrip  { grid-area: leftstrip; }
-.dashboard__contacts   { grid-area: contacts; }
-.dashboard__hero       { grid-area: hero; }
-.dashboard__agents     { grid-area: agents; }
-.dashboard__recentcalls { grid-area: recentcalls; }
-.dashboard__cinematic  { grid-area: cinematic; }
+.dashboard__contacts   { grid-area: contacts;     overflow: hidden; }
+.dashboard__hero       { grid-area: hero;         overflow: hidden; }
+.dashboard__agents     { grid-area: agents;       overflow: hidden; }
+.dashboard__recentcalls { grid-area: recentcalls; overflow: hidden; }
+.dashboard__cinematic  { grid-area: cinematic;    overflow: hidden; }

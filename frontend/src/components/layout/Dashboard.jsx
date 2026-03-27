@@ -5,6 +5,7 @@ import LeftStrip from "./LeftStrip";
 import Contacts from "../../panels/Contacts/Contacts";
 import Agents from "../../panels/Agents/Agents";
 import InitiateCall from "../../panels/InitiateCall/InitiateCall";
+import MissionArchive from "../../panels/MissionArchive/MissionArchive";
 import { getContacts, getAgents } from "../../services/api";
 
 function Panel({ label, style }) {
@@ -91,7 +92,7 @@ export default function Dashboard({ onLogout }) {
         />
       </div>
       <div className="dashboard__recentcalls">
-        <Panel label="◈ Recent Calls" />
+        <MissionArchive />
       </div>
       <div className="dashboard__cinematic">
         <Panel label="◈ System" />
