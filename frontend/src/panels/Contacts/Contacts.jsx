@@ -32,7 +32,7 @@ function AddTargetModal({ onClose, onAdded }) {
     try {
       const fd = new FormData();
       fd.append("name", form.name);
-      fd.append("phone_number", form.phone_number);
+      fd.append("phone_number", `+1${form.phone_number}`);
       fd.append("image", imageFile);
 
       const newContact = await createContact(fd);
@@ -110,11 +110,12 @@ function AddTargetModal({ onClose, onAdded }) {
             <label className="modal-field__label">Comms Channel (Phone)</label>
             <div className="modal-field__input-wrap">
               <span className="modal-field__prefix">▸</span>
+              <span className="modal-field__country-code">+1</span>
               <input
-                className="modal-field__input"
+                className="modal-field__input modal-field__input--phone"
                 type="tel"
                 name="phone_number"
-                placeholder="enter +1xxxxxxxxxx"
+                placeholder="xxxxxxxxxx"
                 value={form.phone_number}
                 onChange={handleChange}
                 autoComplete="off"

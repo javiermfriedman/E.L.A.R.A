@@ -266,6 +266,21 @@
   color: var(--color-primary);
 }
 
+.modal-field__input--phone {
+  padding-left: 52px;
+}
+
+.modal-field__country-code {
+  position: absolute;
+  left: 26px;
+  color: var(--color-primary);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  pointer-events: none;
+  letter-spacing: 0.05em;
+}
+
 .modal-field__input::placeholder {
   color: var(--color-text-muted);
 }
