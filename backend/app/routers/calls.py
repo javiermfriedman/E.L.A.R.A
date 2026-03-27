@@ -11,7 +11,7 @@ and handle subsequent WebSocket connections for Media Streams.
 """
 import os
 from twilio.rest import Client
-from fastapi import APIRouter, Request, WebSocket
+from fastapi import APIRouter, Request, WebSocket, HTTPException
 from fastapi.responses import HTMLResponse
 from loguru import logger
 from app.services.twilio_service import (
@@ -107,6 +107,9 @@ async def websocket_endpoint(websocket: WebSocket):
 async def get_call_status(call_sid: str) -> CallStatus:
     """Get the status of a call.
     """
-    return CallStatus(call_sid=call_sid, status="call_initiated", to_number=to_number)
-    call = client.calls(call_sid).fetch()
-    return CallStatus(call_sid=call.sid, status=call.status, to_number=call.to)
+    try:
+        call = client.calls(call_sid).fetch()
+        return CallStatus(call_sid=call.sid, status=call.status, to_number=call.to)
+    except Exception as e:
+        logger.error(f"Error getting call status: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
