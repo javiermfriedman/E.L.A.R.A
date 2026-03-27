@@ -30,8 +30,8 @@ export default function AccessGranted({ onComplete }) {
         <div className="ag__code">
           {[
             "IDENTITY: CONFIRMED",
-            "CLEARANCE: LEVEL 5",
-            "LOADING PRANK OPS...",
+            "CLEARANCE: LEVEL 7",
+            "LOADING E.L.A.R.A. LOCAL SERVER..",
           ].map((line, i) => (
             <div
               key={i}

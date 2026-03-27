@@ -62,7 +62,7 @@ export default function Login({ onLogin }) {
             E.L.A.R.A
           </div>
           <div className="login-card__subtitle">
-            Enhanced Laughter &amp; Absurdity Response Agent
+            Enhanced Language Acquisition &amp; Response Agent
           </div>
         </div>
 

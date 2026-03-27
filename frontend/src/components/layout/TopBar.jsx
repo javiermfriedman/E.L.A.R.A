@@ -54,7 +54,7 @@ export default function TopBar() {
       <div className="topbar__left">
         <div className="topbar__logo">
           <div className="topbar__logo-name">E.L.A.R.A v1.0.0</div>
-          <div className="topbar__logo-sub">Prank Ops Command</div>
+          <div className="topbar__logo-sub">Friedman Inustries</div>
         </div>
 
         <div className="topbar__sep" />
@@ -77,7 +77,7 @@ export default function TopBar() {
         <div className="topbar__title-wrap">
           <div className="topbar__title-line" />
           <div className="topbar__title">
-            Top Secret — Prank Ops Command Center
+            Top Secret — E.L.A.R.A Command Center
           </div>
           <div className="topbar__title-line topbar__title-line--right" />
         </div>
