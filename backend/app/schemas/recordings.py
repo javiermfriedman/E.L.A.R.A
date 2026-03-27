@@ -13,3 +13,6 @@ class RecordingsResponse(BaseModel):
     target_name: str
     to_number: str
     created_at: datetime
+
+class RecordingDeleteResponse(BaseModel):
+    message: str

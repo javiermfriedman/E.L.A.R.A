@@ -4,7 +4,7 @@ from starlette import status
 
 from app.dependencies import db_dependency, user_dependency
 from app.models.recordings import Recordings
-from app.schemas.recordings import RecordingsResponse
+from app.schemas.recordings import RecordingsResponse, RecordingDeleteResponse
 
 router = APIRouter(
     prefix="/recordings",
@@ -44,3 +44,13 @@ async def get_recording_audio(
         media_type="audio/wav",
         headers={"Content-Disposition": f'inline; filename="recording-{recording_id}.wav"'},
     )
+
+@router.delete("/", response_model=RecordingDeleteResponse)
+async def delete_recordings(db: db_dependency, user: user_dependency):
+    recordings = db.query(Recordings).filter(Recordings.user_id == user["id"]).all()
+    if recordings is None:
+        return RecordingDeleteResponse(message="No recordings")
+    for recording in recordings:
+        db.delete(recording)
+    db.commit()
+    return RecordingDeleteResponse(message="Recordings deleted successfully")

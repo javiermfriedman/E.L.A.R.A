@@ -4,7 +4,7 @@ from starlette import status
 
 from app.dependencies import db_dependency, user_dependency
 from app.models.contacts import Contacts
-from app.schemas.contacts import ContactResponse
+from app.schemas.contacts import ContactResponse, ContactDeleteResponse
 from loguru import logger
 
 from app.services.image_preprocess import crop_and_resize
@@ -52,3 +52,14 @@ async def add_contact(
 async def get_contacts(db: db_dependency, user: user_dependency):
     contacts = db.query(Contacts).filter(Contacts.owner_id == user["id"]).all()
     return contacts
+
+@router.delete("/", response_model=ContactDeleteResponse)
+async def delete_contacts(db: db_dependency, user: user_dependency):
+    print(f"Deleting contacts for user: {user['id']}")
+    contacts = db.query(Contacts).filter(Contacts.owner_id == user["id"]).all()
+    if contacts is None:
+        return ContactDeleteResponse(message="No contacts")
+    for contact in contacts:
+        db.delete(contact)
+    db.commit()
+    return ContactDeleteResponse(message="Contacts deleted successfully")

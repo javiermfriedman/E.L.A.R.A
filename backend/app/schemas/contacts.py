@@ -16,3 +16,6 @@ class ContactResponse(BaseModel):
     phone_number: str
     image: str | None
     created_at: datetime
+
+class ContactDeleteResponse(BaseModel):
+    message: str

@@ -15,3 +15,7 @@ class AgentResponse(BaseModel):
     voice_id: str | None
     image: str | None
     created_at: datetime
+
+
+class AgentDeleteResponse(BaseModel):
+    message: str
