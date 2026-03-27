@@ -8,6 +8,7 @@ function CreateAgentModal({ onClose, onAdded }) {
     name: "",
     description: "",
     system_prompt: "",
+    first_message: "",
     voice_id: "zmcVlqmyk3Jpn5AVYcAL",
   });
   const [imageFile, setImageFile] = useState(null);
@@ -29,7 +30,13 @@ function CreateAgentModal({ onClose, onAdded }) {
   }
 
   async function handleSubmit() {
-    if (!form.name || !form.description || !form.system_prompt || !imageFile) {
+    if (
+      !form.name ||
+      !form.description ||
+      !form.system_prompt ||
+      !form.first_message ||
+      !imageFile
+    ) {
       setError("⚠ ALL FIELDS + IMAGE REQUIRED");
       return;
     }
@@ -42,6 +49,7 @@ function CreateAgentModal({ onClose, onAdded }) {
       fd.append("name", form.name);
       fd.append("description", form.description);
       fd.append("system_prompt", form.system_prompt);
+      fd.append("first_message", form.first_message);
       fd.append("voice_id", form.voice_id);
       fd.append("image", imageFile);
 
@@ -141,6 +149,19 @@ function CreateAgentModal({ onClose, onAdded }) {
             />
           </div>
 
+          {/* First message */}
+          <div className="modal-field">
+            <label className="modal-field__label">Opening Line</label>
+            <textarea
+              className="modal-field__textarea"
+              name="first_message"
+              placeholder="the first thing the agent says when the target picks up..."
+              value={form.first_message}
+              onChange={handleChange}
+              spellCheck="false"
+            />
+          </div>
+
           {/* Voice ID */}
           <div className="modal-field">
             <label className="modal-field__label">Voice ID (ElevenLabs)</label>
@@ -227,6 +248,10 @@ function AgentCard({ agent, selectedId, onSelect }) {
             <div className="agent-card__field-value agent-card__field-value--prompt">
               {agent.system_prompt}
             </div>
+          </div>
+          <div className="agent-card__field">
+            <div className="agent-card__field-label">Opening Line</div>
+            <div className="agent-card__field-value">{agent.first_message}</div>
           </div>
         </div>
 

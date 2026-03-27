@@ -15,57 +15,12 @@ from twilio.twiml.voice_response import Connect, Stream, VoiceResponse
 from app.dependencies import db_dependency
 from app.models.agents import Agents
 from app.schemas.agents import AgentResponse
-class DialoutRequest(BaseModel):
-    """Request data for initiating a dial-out call.
-
-    Add any custom data here needed for the call. For example,
-    you may add customer information, campaign data, or call context.
-
-    Attributes:
-        to_number (str): The phone number to dial (E.164 format recommended).
-        from_number (str): The Twilio phone number to call from (E.164 format).
-    """
-
-    to_number: str
-    from_number: str
+from app.schemas.calls import TwilioCallResult, TwimlRequest
 
 
-class TwilioCallResult(BaseModel):
-    """Result of a Twilio call.
-
-    Attributes:
-        call_sid (str): The unique call SID of the initiated call.
-        to_number (str): The phone number that was dialed.
-    """
-
-    call_sid: str
-    to_number: str
 
 
-class DialoutResponse(BaseModel):
-    """Response from the dialout endpoint.
 
-    Attributes:
-        call_sid (str): The unique call SID of the initiated call.
-        status (str): The status of the call initiation (e.g., "call_initiated").
-        to_number (str): The phone number that was dialed.
-    """
-
-    call_sid: str
-    status: str
-    to_number: str
-
-
-class TwimlRequest(BaseModel):
-    """Request data for generating TwiML.
-
-    Attributes:
-        to_number (str): The phone number being called.
-        from_number (str): The phone number calling from.
-    """
-
-    to_number: str
-    from_number: str
 
 def verify_agent(agent_id: str, db: db_dependency) -> AgentResponse:
     """Verify that the agent exists and is owned by the user.

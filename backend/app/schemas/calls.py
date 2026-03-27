@@ -4,9 +4,8 @@ class DialoutRequest(BaseModel):
     agent_id: str
     to_number: str
 
-class TwilioCallRequest(BaseModel):
-    agent_id: str
-    user_id: str
+class TwilioCallResult(BaseModel):
+    call_sid: str
     to_number: str
 
 class TwilioCallResult(BaseModel):
@@ -19,6 +18,5 @@ class DialoutResponse(BaseModel):
     to_number: str
 
 class TwimlRequest(BaseModel):
-    to_number: str | None
-    from_number: str | None
-    call_sid: str | None
+    to_number: str
+    from_number: str

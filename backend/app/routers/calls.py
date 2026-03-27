@@ -14,7 +14,6 @@ from fastapi import APIRouter, Request, WebSocket
 from fastapi.responses import HTMLResponse
 from loguru import logger
 from app.services.twilio_service import (
-    DialoutResponse,
     generate_twiml,
     make_twilio_call,
     parse_twiml_request,
@@ -25,7 +24,7 @@ from app.pipelines.mark_one import bot
 from pipecat.runner.types import WebSocketRunnerArguments
 
 from app.dependencies import db_dependency, user_dependency
-from app.schemas.calls import DialoutRequest
+from app.schemas.calls import DialoutRequest, DialoutResponse
 
 router = APIRouter()
 
