@@ -131,3 +131,21 @@ export async function createAgent(formData) {
 
   return res.json();
 }
+// Calls
+export async function initiateCall(agent_id, target_name, to_number) {
+  return request("/dialout", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ agent_id, target_name, to_number }),
+  });
+}
+
+export async function getCallStatus(call_sid) {
+  return request(`/call/status?call_sid=${call_sid}`);
+}
+
+export async function cancelCall(call_sid) {
+  return request(`/call/cancel?call_sid=${call_sid}`, {
+    method: "POST",
+  });
+}

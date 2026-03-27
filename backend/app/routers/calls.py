@@ -12,6 +12,7 @@ and handle subsequent WebSocket connections for Media Streams.
 import os
 from twilio.rest import Client
 from fastapi import APIRouter, Request, WebSocket, HTTPException
+from twilio.base.exceptions import TwilioRestException
 from fastapi.responses import HTMLResponse
 from loguru import logger
 from app.services.twilio_service import (
@@ -103,7 +104,7 @@ async def websocket_endpoint(websocket: WebSocket):
         logger.error(f"Error in WebSocket endpoint: {e}")
         await websocket.close()
 
-@router.get("/status")
+@router.get("/call/status")
 async def get_call_status(call_sid: str) -> CallStatus:
     """Get the status of a call.
     """
@@ -113,3 +114,35 @@ async def get_call_status(call_sid: str) -> CallStatus:
     except Exception as e:
         logger.error(f"Error getting call status: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/call/cancel")
+async def cancel_call(call_sid: str) -> CallStatus:
+    """Cancel or end an active Twilio call."""
+    try:
+        call = client.calls(call_sid).fetch()
+
+        if call.status in ["queued", "ringing"]:
+            updated_call = client.calls(call_sid).update(status="canceled")
+        elif call.status in ["in-progress", "initiated"]:
+            updated_call = client.calls(call_sid).update(status="completed")
+        elif call.status in ["completed", "canceled", "busy", "failed", "no-answer"]:
+            return CallStatus(
+                call_sid=call.sid,
+                status=call.status,
+                to_number=call.to
+            )
+        else:
+            updated_call = client.calls(call_sid).update(status="completed")
+
+        return CallStatus(
+            call_sid=updated_call.sid,
+            status=updated_call.status,
+            to_number=updated_call.to
+        )
+
+    except TwilioRestException as e:
+        logger.error(f"Twilio error canceling call {call_sid}: {e}")
+        raise HTTPException(status_code=400, detail=f"Twilio error: {str(e)}")
+    except Exception as e:
+        logger.error(f"Error canceling call {call_sid}: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")

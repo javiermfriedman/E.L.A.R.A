@@ -1,9 +1,11 @@
+import { useState, useEffect } from "react";
 import "./Dashboard.css";
 import TopBar from "./TopBar";
 import LeftStrip from "./LeftStrip";
 import Contacts from "../../panels/Contacts/Contacts";
 import Agents from "../../panels/Agents/Agents";
-import { useState, useEffect } from "react";
+import InitiateCall from "../../panels/InitiateCall/InitiateCall";
+import { getContacts, getAgents } from "../../services/api";
 
 function Panel({ label, style }) {
   return (
@@ -30,11 +32,26 @@ function Panel({ label, style }) {
 export default function Dashboard({ onLogout }) {
   const [selectedContact, setSelectedContact] = useState(null);
   const [selectedAgent, setSelectedAgent] = useState(null);
+  const [contacts, setContacts] = useState([]);
+  const [agents, setAgents] = useState([]);
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem("elara_token");
-    if (token) setReady(true);
+    if (!token) return;
+
+    async function load() {
+      try {
+        const [c, a] = await Promise.all([getContacts(), getAgents()]);
+        setContacts(c);
+        setAgents(a);
+      } catch (err) {
+        console.error("Dashboard load error:", err);
+      } finally {
+        setReady(true);
+      }
+    }
+    load();
   }, []);
 
   if (!ready) return null;
@@ -49,21 +66,29 @@ export default function Dashboard({ onLogout }) {
       </div>
       <div className="dashboard__contacts">
         <Contacts
+          contacts={contacts}
+          setContacts={setContacts}
           selectedId={selectedContact?.id}
           onSelect={setSelectedContact}
         />
       </div>
       <div className="dashboard__hero">
-        <Panel
-          label="★ Initiate Call"
-          style={{
-            border: "1px solid rgba(0,255,156,0.5)",
-            boxShadow: "var(--glow-primary)",
-          }}
+        <InitiateCall
+          contact={selectedContact}
+          agent={selectedAgent}
+          contacts={contacts}
+          agents={agents}
+          onSelectContact={setSelectedContact}
+          onSelectAgent={setSelectedAgent}
         />
       </div>
       <div className="dashboard__agents">
-        <Agents selectedId={selectedAgent?.id} onSelect={setSelectedAgent} />
+        <Agents
+          agents={agents}
+          setAgents={setAgents}
+          selectedId={selectedAgent?.id}
+          onSelect={setSelectedAgent}
+        />
       </div>
       <div className="dashboard__recentcalls">
         <Panel label="◈ Recent Calls" />

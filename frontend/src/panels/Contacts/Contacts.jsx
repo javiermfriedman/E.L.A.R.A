@@ -142,26 +142,18 @@ function AddTargetModal({ onClose, onAdded }) {
   );
 }
 
-export default function Contacts({ selectedId, onSelect }) {
-  const [contacts, setContacts] = useState([]);
+export default function Contacts({
+  contacts,
+  setContacts,
+  selectedId,
+  onSelect,
+}) {
   const [showModal, setShowModal] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [loading] = useState(false);
 
-  useEffect(() => {
-    async function load() {
-      const token = localStorage.getItem("elara_token");
-      if (!token) return;
-      try {
-        const data = await getContacts();
-        setContacts(data);
-      } catch (err) {
-        console.error("Failed to load contacts:", err);
-      } finally {
-        setLoading(false);
-      }
-    }
-    load();
-  }, []);
+  function handleAdded(newContact) {
+    setContacts((prev) => [...prev, newContact]);
+  }
 
   function handleAdded(newContact) {
     setContacts((prev) => [...prev, newContact]);

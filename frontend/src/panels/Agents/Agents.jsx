@@ -266,26 +266,9 @@ function AgentCard({ agent, selectedId, onSelect }) {
   );
 }
 
-export default function Agents({ selectedId, onSelect }) {
-  const [agents, setAgents] = useState([]);
+export default function Agents({ agents, setAgents, selectedId, onSelect }) {
   const [showModal, setShowModal] = useState(false);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    async function load() {
-      const token = localStorage.getItem("elara_token");
-      if (!token) return;
-      try {
-        const data = await getAgents();
-        setAgents(data);
-      } catch (err) {
-        console.error("Failed to load agents:", err);
-      } finally {
-        setLoading(false);
-      }
-    }
-    load();
-  }, []);
+  const [loading] = useState(false);
 
   function handleAdded(newAgent) {
     setAgents((prev) => [...prev, newAgent]);
