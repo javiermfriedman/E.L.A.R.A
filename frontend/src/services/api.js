@@ -158,3 +158,15 @@ export async function getRecordingAudio(recordingId) {
   const blob = await res.blob();
   return URL.createObjectURL(blob);
 }
+
+export async function deleteContacts() {
+  return request("/contacts/", { method: "DELETE" });
+}
+
+export async function deleteRecordings() {
+  return request("/recordings/", { method: "DELETE" });
+}
+
+export async function deleteAgents() {
+  return request("/agents/", { method: "DELETE" });
+}
