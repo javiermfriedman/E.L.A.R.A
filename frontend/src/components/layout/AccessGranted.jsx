@@ -31,7 +31,7 @@ export default function AccessGranted({ onComplete }) {
           {[
             "IDENTITY: CONFIRMED",
             "CLEARANCE: LEVEL 7",
-            "LOADING E.L.A.R.A. LOCAL SERVER..",
+            "LOADING FRIEDMAN INDUSTRIES LOCAL SERVER...",
           ].map((line, i) => (
             <div
               key={i}
