@@ -14,7 +14,7 @@ const CHATTER_CALLING = [
   "transmission_in_progress",
 ];
 
-function CallStatusModal({ callSid, contact, agent, onClose }) {
+function CallStatusModal({ callSid, contact, agent, onClose, onCallComplete }) {
   const [status, setStatus] = useState("ringing");
   const [duration, setDuration] = useState(0);
   const [done, setDone] = useState(false);
@@ -41,8 +41,10 @@ function CallStatusModal({ callSid, contact, agent, onClose }) {
           clearInterval(durationRef.current);
           if (["failed", "busy", "no-answer"].includes(data.status)) {
             setFailing(true);
-            setTimeout(() => onClose(), 2000);
+          } else if (data.status === "completed" && onCallComplete) {
+            onCallComplete();
           }
+          setTimeout(() => onClose(), 2000);
         }
       } catch (err) {
         console.error("Status poll error:", err);
@@ -163,6 +165,7 @@ export default function InitiateCall({
   agents,
   onSelectContact,
   onSelectAgent,
+  onCallComplete,
 }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -446,6 +449,7 @@ export default function InitiateCall({
           contact={contact}
           agent={agent}
           onClose={() => setShowModal(false)}
+          onCallComplete={onCallComplete}
         />
       )}
     </>

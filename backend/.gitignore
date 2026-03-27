@@ -25,3 +25,5 @@ recordings/
 htmlcov/
 
 *.wav
+
+generate_sample_audio.py

@@ -36,6 +36,7 @@ export default function Dashboard({ onLogout }) {
   const [contacts, setContacts] = useState([]);
   const [agents, setAgents] = useState([]);
   const [ready, setReady] = useState(false);
+  const [archiveKey, setArchiveKey] = useState(0);
 
   useEffect(() => {
     const token = localStorage.getItem("elara_token");
@@ -81,6 +82,7 @@ export default function Dashboard({ onLogout }) {
           agents={agents}
           onSelectContact={setSelectedContact}
           onSelectAgent={setSelectedAgent}
+          onCallComplete={() => setArchiveKey((k) => k + 1)}
         />
       </div>
       <div className="dashboard__agents">
@@ -92,7 +94,7 @@ export default function Dashboard({ onLogout }) {
         />
       </div>
       <div className="dashboard__recentcalls">
-        <MissionArchive />
+        <MissionArchive refreshKey={archiveKey} />
       </div>
       <div className="dashboard__cinematic">
         <Panel label="◈ System" />

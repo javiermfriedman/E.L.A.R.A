@@ -114,7 +114,7 @@ function AddTargetModal({ onClose, onAdded }) {
                 className="modal-field__input"
                 type="tel"
                 name="phone_number"
-                placeholder="enter phone number..."
+                placeholder="enter +1xxxxxxxxxx"
                 value={form.phone_number}
                 onChange={handleChange}
                 autoComplete="off"

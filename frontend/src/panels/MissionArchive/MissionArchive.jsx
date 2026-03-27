@@ -21,7 +21,7 @@ function formatDate(dateStr) {
   );
 }
 
-export default function MissionArchive() {
+export default function MissionArchive({ refreshKey }) {
   const [recordings, setRecordings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState(null);
@@ -40,7 +40,7 @@ export default function MissionArchive() {
       }
     }
     load();
-  }, []);
+  }, [refreshKey]);
 
   return (
     <>

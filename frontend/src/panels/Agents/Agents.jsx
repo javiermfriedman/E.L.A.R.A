@@ -1,9 +1,12 @@
 import { useState, useEffect, useRef } from "react";
 import PanelWrapper from "../../components/ui/PanelWrapper";
 import { getAgents, createAgent } from "../../services/api";
+import VoiceRegistry from "./VoiceRegistry";
 import "./Agents.css";
 
 function CreateAgentModal({ onClose, onAdded }) {
+  const [showRegistry, setShowRegistry] = useState(false);
+  const [selectedVoice, setSelectedVoice] = useState(null);
   const [form, setForm] = useState({
     name: "",
     description: "",
@@ -65,7 +68,11 @@ function CreateAgentModal({ onClose, onAdded }) {
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal" onClick={(e) => e.stopPropagation()}>
+      <div
+        className="modal"
+        style={{ position: "relative" }}
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="modal__header">
           <div className="modal__title">◈ Deploy New Agent</div>
           <button className="modal__close" onClick={onClose}>
@@ -162,22 +169,26 @@ function CreateAgentModal({ onClose, onAdded }) {
             />
           </div>
 
-          {/* Voice ID */}
+          {/* Voice selector */}
           <div className="modal-field">
-            <label className="modal-field__label">Voice ID (ElevenLabs)</label>
+            <label className="modal-field__label">Operative Voice</label>
             <div className="modal-field__input-wrap">
               <span className="modal-field__prefix">▸</span>
               <input
                 className="modal-field__input"
                 type="text"
-                name="voice_id"
-                placeholder="voice id..."
-                value={form.voice_id}
-                onChange={handleChange}
-                autoComplete="off"
-                spellCheck="false"
+                readOnly
+                value={selectedVoice ? `${selectedVoice.codename} — ${selectedVoice.description}` : form.voice_id}
+                placeholder="select a voice..."
               />
             </div>
+            <button
+              type="button"
+              className="modal__action-btn"
+              onClick={() => setShowRegistry((v) => !v)}
+            >
+              {showRegistry ? "✕ Close Registry" : "◈ Browse Voices"}
+            </button>
           </div>
 
           {error && <div className="modal__error">{error}</div>}
@@ -195,6 +206,17 @@ function CreateAgentModal({ onClose, onAdded }) {
             <span>{loading ? "Deploying..." : "⌗ Deploy Agent"}</span>
           </button>
         </div>
+
+        <VoiceRegistry
+          open={showRegistry}
+          selectedVoiceId={form.voice_id}
+          onSelect={(voice) => {
+            setForm((prev) => ({ ...prev, voice_id: voice.id }));
+            setSelectedVoice(voice);
+            setShowRegistry(false);
+          }}
+          onClose={() => setShowRegistry(false)}
+        />
       </div>
     </div>
   );
