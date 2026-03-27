@@ -64,10 +64,10 @@ def get_wav_bytes(audio: bytes, sample_rate: int, num_channels: int) -> bytes:
         wf.writeframes(audio)
     return buffer.getvalue()
 
-async def save_recording(user_id: int, audio: bytes) -> Recordings:
+async def save_recording(user_id: int, target_name: str, to_number: str, audio: bytes) -> Recordings:
     # 1. Save to local recordings dir
     timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-    filename = f"recording_{user_id}_{timestamp}.wav"
+    filename = f"recording_{user_id}_{target_name}_{to_number}_{timestamp}.wav"
     file_path = RECORDINGS_DIR / filename
     with open(file_path, "wb") as f:
         f.write(audio)
@@ -75,7 +75,7 @@ async def save_recording(user_id: int, audio: bytes) -> Recordings:
     
     db = next(get_db())
     try:
-        recording = Recordings(user_id=user_id, audio=audio)
+        recording = Recordings(user_id=user_id, target_name=target_name, to_number=to_number, audio=audio)
         db.add(recording)
         db.commit()
         db.refresh(recording)
@@ -90,6 +90,8 @@ async def run_bot(
     system_prompt: str,
     first_message: str,
     user_id: int,
+    target_name: str,
+    to_number: str,
 ):
     llm = OpenAILLMService(
         api_key=os.getenv("OPENAI_API_KEY"),
@@ -138,7 +140,7 @@ async def run_bot(
     @audiobuffer.event_handler("on_audio_data")
     async def on_audio_data(buffer, audio: bytes, sample_rate: int, num_channels: int):
         wav_bytes = get_wav_bytes(audio, sample_rate, num_channels)
-        await save_recording(user_id, wav_bytes)
+        await save_recording(user_id, target_name, to_number, wav_bytes)
         logger.info(f"Saved recording for user {user_id}")
 
     messages = [
@@ -210,7 +212,7 @@ async def bot(runner_args: RunnerArguments):
     from_number = body_data.get("from_number")
     agent_id = body_data.get("agent_id")    # <-- add this
     user_id = body_data.get("user_id")      # <-- add this
-
+    target_name = body_data.get("target_name")
     logger.info(f"Call - To: {to_number}, From: {from_number}, Agent ID: {agent_id}, User ID: {user_id}")
 
     serializer = TwilioFrameSerializer(
@@ -245,4 +247,4 @@ async def bot(runner_args: RunnerArguments):
     
     system_prompt = agent.system_prompt
     first_message = agent.first_message
-    await run_bot(transport, runner_args.handle_sigint, vad, system_prompt, first_message, user_id)
+    await run_bot(transport, runner_args.handle_sigint, vad, system_prompt, first_message, user_id, target_name, to_number)

@@ -2,6 +2,7 @@ from pydantic import BaseModel
 
 class DialoutRequest(BaseModel):
     agent_id: str
+    target_name: str
     to_number: str
 
 class TwilioCallResult(BaseModel):
@@ -20,3 +21,8 @@ class DialoutResponse(BaseModel):
 class TwimlRequest(BaseModel):
     to_number: str
     from_number: str
+
+class CallStatus(BaseModel):
+    call_sid: str
+    status: str
+    to_number: str

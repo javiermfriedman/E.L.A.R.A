@@ -41,6 +41,7 @@ async def make_twilio_call(
     user_id: int | str,
     agent_id: str,
     to_number: str,
+    target_name: str,
 ) -> TwilioCallResult:
     """Initiate an outbound call via Twilio API.
 
@@ -51,7 +52,7 @@ async def make_twilio_call(
         user_id: Authenticated user id (may be int or str depending on auth).
         agent_id: Agent id for the outbound call context.
         to_number: Destination E.164 number.
-
+        target_name: Name of the target.
     Returns:
         TwilioCallResult: Result containing the call SID and destination number.
 
@@ -70,6 +71,7 @@ async def make_twilio_call(
         f"{local_server_url}/twiml"
         f"?agent_id={agent_id}"
         f"&user_id={user_id}"
+        f"&target_name={target_name}"
     )
     account_sid = os.getenv("TWILIO_ACCOUNT_SID")
     auth_token = os.getenv("TWILIO_AUTH_TOKEN")
@@ -135,7 +137,7 @@ def get_websocket_url() -> str:
         return ws_url
 
 
-def generate_twiml(twiml_request: TwimlRequest, agent_id: str, user_id: str) -> str:
+def generate_twiml(twiml_request: TwimlRequest, agent_id: str, user_id: str, target_name: str) -> str:
     """Generate TwiML response with WebSocket Stream connection.
 
     Creates TwiML that instructs Twilio to connect the call to our WebSocket
@@ -146,7 +148,7 @@ def generate_twiml(twiml_request: TwimlRequest, agent_id: str, user_id: str) -> 
         twiml_request (TwimlRequest): Request containing call metadata (phone numbers).
         agent_id (str): Agent id for the outbound call context.
         user_id (str): Authenticated user id.
-
+        target_name (str): Name of the target.
     Returns:
         str: TwiML XML string with Stream connection and parameters.
     """
@@ -164,7 +166,7 @@ def generate_twiml(twiml_request: TwimlRequest, agent_id: str, user_id: str) -> 
     stream.parameter(name="from_number", value=twiml_request.from_number)
     stream.parameter(name="agent_id", value=agent_id)
     stream.parameter(name="user_id", value=user_id)
-
+    stream.parameter(name="target_name", value=target_name)
     connect.append(stream)
     response.append(connect)
     response.pause(length=20)

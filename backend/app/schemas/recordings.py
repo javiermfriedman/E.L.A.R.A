@@ -10,4 +10,6 @@ class RecordingsResponse(BaseModel):
 
     id: int
     user_id: int
+    target_name: str
+    to_number: str
     created_at: datetime

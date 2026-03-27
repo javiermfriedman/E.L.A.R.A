@@ -7,5 +7,7 @@ class Recordings(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    target_name = Column(String, nullable=False)
+    to_number = Column(String, nullable=False)
     audio = Column(LargeBinary, nullable=False)     # LargeBinary maps to BYTEA in Postgres
     created_at = Column(DateTime, default=datetime.datetime.now)
