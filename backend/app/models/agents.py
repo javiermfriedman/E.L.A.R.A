@@ -15,6 +15,7 @@ class Agents(Base):
     name = Column(String)
     description = Column(String)
     system_prompt = Column(String)
+    first_message = Column(String)
     image_filename = Column(String)
     image_data = Column(LargeBinary)
     created_at = Column(DateTime, default=datetime.now)

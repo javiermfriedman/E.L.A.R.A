@@ -82,10 +82,9 @@ export async function login(username, password) {
 // Agents
 
 // Calls
-export async function getCalls() {
-  return request("/calls/");
+export async function getRecordings() {
+  return request("/recordings/");
 }
-
 // Contacts
 export async function getContacts() {
   return request("/contacts/");
@@ -130,4 +129,44 @@ export async function createAgent(formData) {
   }
 
   return res.json();
+}
+// Calls
+export async function initiateCall(agent_id, target_name, to_number) {
+  return request("/dialout", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ agent_id, target_name, to_number }),
+  });
+}
+
+export async function getCallStatus(call_sid) {
+  return request(`/call/status?call_sid=${call_sid}`);
+}
+
+export async function cancelCall(call_sid) {
+  return request(`/call/cancel?call_sid=${call_sid}`, {
+    method: "POST",
+  });
+}
+
+export async function getRecordingAudio(recordingId) {
+  const token = getToken();
+  const res = await fetch(`${BASE_URL}/recordings/${recordingId}/audio`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) throw new Error("Failed to fetch audio");
+  const blob = await res.blob();
+  return URL.createObjectURL(blob);
+}
+
+export async function deleteContacts() {
+  return request("/contacts/", { method: "DELETE" });
+}
+
+export async function deleteRecordings() {
+  return request("/recordings/", { method: "DELETE" });
+}
+
+export async function deleteAgents() {
+  return request("/agents/", { method: "DELETE" });
 }

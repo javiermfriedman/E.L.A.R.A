@@ -1,14 +1,21 @@
 import { useState, useEffect, useRef } from "react";
 import PanelWrapper from "../../components/ui/PanelWrapper";
 import { getAgents, createAgent } from "../../services/api";
+import { voiceRegistry } from "../../data/voiceRegistry";
+import VoiceRegistry from "./VoiceRegistry";
 import "./Agents.css";
 
+const defaultVoice = voiceRegistry[0];
+
 function CreateAgentModal({ onClose, onAdded }) {
+  const [showRegistry, setShowRegistry] = useState(false);
+  const [selectedVoice, setSelectedVoice] = useState(defaultVoice);
   const [form, setForm] = useState({
     name: "",
     description: "",
     system_prompt: "",
-    voice_id: "zmcVlqmyk3Jpn5AVYcAL",
+    first_message: "",
+    voice_id: defaultVoice.id,
   });
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
@@ -29,7 +36,13 @@ function CreateAgentModal({ onClose, onAdded }) {
   }
 
   async function handleSubmit() {
-    if (!form.name || !form.description || !form.system_prompt || !imageFile) {
+    if (
+      !form.name ||
+      !form.description ||
+      !form.system_prompt ||
+      !form.first_message ||
+      !imageFile
+    ) {
       setError("⚠ ALL FIELDS + IMAGE REQUIRED");
       return;
     }
@@ -42,6 +55,7 @@ function CreateAgentModal({ onClose, onAdded }) {
       fd.append("name", form.name);
       fd.append("description", form.description);
       fd.append("system_prompt", form.system_prompt);
+      fd.append("first_message", form.first_message);
       fd.append("voice_id", form.voice_id);
       fd.append("image", imageFile);
 
@@ -57,7 +71,11 @@ function CreateAgentModal({ onClose, onAdded }) {
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal" onClick={(e) => e.stopPropagation()}>
+      <div
+        className="modal"
+        style={{ position: "relative" }}
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="modal__header">
           <div className="modal__title">◈ Deploy New Agent</div>
           <button className="modal__close" onClick={onClose}>
@@ -141,22 +159,39 @@ function CreateAgentModal({ onClose, onAdded }) {
             />
           </div>
 
-          {/* Voice ID */}
+          {/* First message */}
           <div className="modal-field">
-            <label className="modal-field__label">Voice ID (ElevenLabs)</label>
+            <label className="modal-field__label">Opening Line</label>
+            <textarea
+              className="modal-field__textarea"
+              name="first_message"
+              placeholder="the first thing the agent says when the target picks up..."
+              value={form.first_message}
+              onChange={handleChange}
+              spellCheck="false"
+            />
+          </div>
+
+          {/* Voice selector */}
+          <div className="modal-field">
+            <label className="modal-field__label">Operative Voice</label>
             <div className="modal-field__input-wrap">
               <span className="modal-field__prefix">▸</span>
               <input
                 className="modal-field__input"
                 type="text"
-                name="voice_id"
-                placeholder="voice id..."
-                value={form.voice_id}
-                onChange={handleChange}
-                autoComplete="off"
-                spellCheck="false"
+                readOnly
+                value={selectedVoice ? selectedVoice.codename : form.voice_id}
+                placeholder="select a voice..."
               />
             </div>
+            <button
+              type="button"
+              className="modal__action-btn"
+              onClick={() => setShowRegistry((v) => !v)}
+            >
+              {showRegistry ? "✕ Close Registry" : "◈ Browse Voices"}
+            </button>
           </div>
 
           {error && <div className="modal__error">{error}</div>}
@@ -174,6 +209,17 @@ function CreateAgentModal({ onClose, onAdded }) {
             <span>{loading ? "Deploying..." : "⌗ Deploy Agent"}</span>
           </button>
         </div>
+
+        <VoiceRegistry
+          open={showRegistry}
+          selectedVoiceId={form.voice_id}
+          onSelect={(voice) => {
+            setForm((prev) => ({ ...prev, voice_id: voice.id }));
+            setSelectedVoice(voice);
+            setShowRegistry(false);
+          }}
+          onClose={() => setShowRegistry(false)}
+        />
       </div>
     </div>
   );
@@ -228,6 +274,14 @@ function AgentCard({ agent, selectedId, onSelect }) {
               {agent.system_prompt}
             </div>
           </div>
+          <div className="agent-card__field">
+            <div className="agent-card__field-label">Opening Line</div>
+            <div className="agent-card__field-value">{agent.first_message}</div>
+          </div>
+          <div className="agent-card__field">
+            <div className="agent-card__field-label">Voice ID</div>
+            <div className="agent-card__field-value">{agent.voice_id}</div>
+          </div>
         </div>
 
         <button
@@ -241,26 +295,9 @@ function AgentCard({ agent, selectedId, onSelect }) {
   );
 }
 
-export default function Agents({ selectedId, onSelect }) {
-  const [agents, setAgents] = useState([]);
+export default function Agents({ agents, setAgents, selectedId, onSelect }) {
   const [showModal, setShowModal] = useState(false);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    async function load() {
-      const token = localStorage.getItem("elara_token");
-      if (!token) return;
-      try {
-        const data = await getAgents();
-        setAgents(data);
-      } catch (err) {
-        console.error("Failed to load agents:", err);
-      } finally {
-        setLoading(false);
-      }
-    }
-    load();
-  }, []);
+  const [loading] = useState(false);
 
   function handleAdded(newAgent) {
     setAgents((prev) => [...prev, newAgent]);

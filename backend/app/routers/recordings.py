@@ -1,33 +1,56 @@
 from fastapi import APIRouter, HTTPException
+from fastapi.responses import Response
 from starlette import status
 
 from app.dependencies import db_dependency, user_dependency
-from app.models.contacts import Contacts
-from app.schemas.contacts import ContactCreate, ContactResponse
-from loguru import logger
+from app.models.recordings import Recordings
+from app.schemas.recordings import RecordingsResponse, RecordingDeleteResponse
 
 router = APIRouter(
-    prefix="/contacts",
-    tags=["contacts"],
+    prefix="/recordings",
+    tags=["recordings"],
 )
 
-@router.post("/", status_code=status.HTTP_201_CREATED, response_model=ContactResponse)
-async def add_contact(contact: ContactCreate, db: db_dependency, user: user_dependency):
-    logger.info(f"Adding contact: {contact}")
-    contact_model = Contacts(
-        name=contact.name,
-        phone_number=contact.phone_number,
-        owner_id=user["id"],  # comes from the JWT token, not from the request
-    )
-    logger.info(f"Contact model: {contact_model}")
-    db.add(contact_model)
-    db.commit()
-    db.refresh(contact_model)
-    logger.info(f"Contact added: {contact_model}")
-    return contact_model
 
-@router.get("/", response_model=list[ContactResponse])
-async def get_contacts(db: db_dependency, user: user_dependency):
-    # only return groceries belonging to the logged-in user
-    contacts = db.query(Contacts).filter(Contacts.owner_id == user["id"]).all()
-    return contacts
+@router.get("/", response_model=list[RecordingsResponse])
+async def get_recordings(db: db_dependency, user: user_dependency):
+    recordings = (
+        db.query(Recordings)
+        .filter(Recordings.user_id == user["id"])
+        .order_by(Recordings.created_at.desc())
+        .all()
+    )
+    return recordings
+
+
+@router.get("/{recording_id}/audio", response_class=Response)
+async def get_recording_audio(
+    recording_id: int,
+    db: db_dependency,
+    user: user_dependency,
+):
+    recording = (
+        db.query(Recordings)
+        .filter(
+            Recordings.id == recording_id,
+            Recordings.user_id == user["id"],
+        )
+        .first()
+    )
+    if not recording:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Recording not found")
+    return Response(
+        content=recording.audio,
+        media_type="audio/wav",
+        headers={"Content-Disposition": f'inline; filename="recording-{recording_id}.wav"'},
+    )
+
+@router.delete("/", response_model=RecordingDeleteResponse)
+async def delete_recordings(db: db_dependency, user: user_dependency):
+    recordings = db.query(Recordings).filter(Recordings.user_id == user["id"]).all()
+    if recordings is None:
+        return RecordingDeleteResponse(message="No recordings")
+    for recording in recordings:
+        db.delete(recording)
+    db.commit()
+    return RecordingDeleteResponse(message="Recordings deleted successfully")

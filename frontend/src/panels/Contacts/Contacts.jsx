@@ -32,7 +32,7 @@ function AddTargetModal({ onClose, onAdded }) {
     try {
       const fd = new FormData();
       fd.append("name", form.name);
-      fd.append("phone_number", form.phone_number);
+      fd.append("phone_number", `+1${form.phone_number}`);
       fd.append("image", imageFile);
 
       const newContact = await createContact(fd);
@@ -110,11 +110,12 @@ function AddTargetModal({ onClose, onAdded }) {
             <label className="modal-field__label">Comms Channel (Phone)</label>
             <div className="modal-field__input-wrap">
               <span className="modal-field__prefix">▸</span>
+              <span className="modal-field__country-code">+1</span>
               <input
-                className="modal-field__input"
+                className="modal-field__input modal-field__input--phone"
                 type="tel"
                 name="phone_number"
-                placeholder="enter phone number..."
+                placeholder="xxxxxxxxxx"
                 value={form.phone_number}
                 onChange={handleChange}
                 autoComplete="off"
@@ -142,26 +143,18 @@ function AddTargetModal({ onClose, onAdded }) {
   );
 }
 
-export default function Contacts({ selectedId, onSelect }) {
-  const [contacts, setContacts] = useState([]);
+export default function Contacts({
+  contacts,
+  setContacts,
+  selectedId,
+  onSelect,
+}) {
   const [showModal, setShowModal] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [loading] = useState(false);
 
-  useEffect(() => {
-    async function load() {
-      const token = localStorage.getItem("elara_token");
-      if (!token) return;
-      try {
-        const data = await getContacts();
-        setContacts(data);
-      } catch (err) {
-        console.error("Failed to load contacts:", err);
-      } finally {
-        setLoading(false);
-      }
-    }
-    load();
-  }, []);
+  function handleAdded(newContact) {
+    setContacts((prev) => [...prev, newContact]);
+  }
 
   function handleAdded(newContact) {
     setContacts((prev) => [...prev, newContact]);

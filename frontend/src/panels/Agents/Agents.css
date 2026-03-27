@@ -302,3 +302,27 @@
 .modal-field__textarea::placeholder {
   color: var(--color-text-muted);
 }
+
+.modal__action-btn {
+  margin-top: 6px;
+  background: transparent;
+  border: 1px solid rgba(255,179,0,0.3);
+  color: rgba(255,179,0,0.6);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  padding: 5px var(--space-md);
+  cursor: pointer;
+  transition: all var(--transition-med);
+  border-radius: var(--radius-sm);
+  width: 100%;
+}
+
+.modal__action-btn:hover {
+  border-color: var(--color-amber);
+  color: var(--color-amber);
+  box-shadow: var(--glow-amber);
+  background: rgba(255,179,0,0.05);
+}

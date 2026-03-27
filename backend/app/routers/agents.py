@@ -3,7 +3,7 @@ from starlette import status
 
 from app.dependencies import db_dependency, user_dependency
 from app.models.agents import Agents
-from app.schemas.agents import AgentResponse
+from app.schemas.agents import AgentResponse, AgentDeleteResponse
 from loguru import logger
 
 from app.services.image_preprocess import crop_and_resize
@@ -23,6 +23,7 @@ async def add_agent(
     name: str = Form(...),
     description: str = Form(...),
     system_prompt: str = Form(...),
+    first_message: str = Form(...),
     voice_id: str = Form("zmcVlqmyk3Jpn5AVYcAL"),
     image: UploadFile = File(...),
 ):
@@ -39,6 +40,7 @@ async def add_agent(
         name=name,
         description=description,
         system_prompt=system_prompt,
+        first_message=first_message,
         voice_id=voice_id,
         image_data=image_bytes,
         image_filename=image.filename,
@@ -55,3 +57,13 @@ async def add_agent(
 async def get_agents(db: db_dependency, user: user_dependency):
     agents = db.query(Agents).filter(Agents.owner_id == user["id"]).all()
     return agents
+
+@router.delete("/", response_model=AgentDeleteResponse)
+async def get_agents(db: db_dependency, user: user_dependency):
+    agents = db.query(Agents).filter(Agents.owner_id == user["id"]).all()
+    if agents is None:
+        return AgentDeleteResponse(message="No agents")
+    for agent in agents:
+        db.delete(agent)
+    db.commit()
+    return AgentDeleteResponse(message="Agents deleted successfully")
