@@ -1,18 +1,21 @@
 import { useState, useEffect, useRef } from "react";
 import PanelWrapper from "../../components/ui/PanelWrapper";
 import { getAgents, createAgent } from "../../services/api";
+import { voiceRegistry } from "../../data/voiceRegistry";
 import VoiceRegistry from "./VoiceRegistry";
 import "./Agents.css";
 
+const defaultVoice = voiceRegistry[0];
+
 function CreateAgentModal({ onClose, onAdded }) {
   const [showRegistry, setShowRegistry] = useState(false);
-  const [selectedVoice, setSelectedVoice] = useState(null);
+  const [selectedVoice, setSelectedVoice] = useState(defaultVoice);
   const [form, setForm] = useState({
     name: "",
     description: "",
     system_prompt: "",
     first_message: "",
-    voice_id: "zmcVlqmyk3Jpn5AVYcAL",
+    voice_id: defaultVoice.id,
   });
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
@@ -178,7 +181,7 @@ function CreateAgentModal({ onClose, onAdded }) {
                 className="modal-field__input"
                 type="text"
                 readOnly
-                value={selectedVoice ? `${selectedVoice.codename} — ${selectedVoice.description}` : form.voice_id}
+                value={selectedVoice ? selectedVoice.codename : form.voice_id}
                 placeholder="select a voice..."
               />
             </div>
@@ -274,6 +277,10 @@ function AgentCard({ agent, selectedId, onSelect }) {
           <div className="agent-card__field">
             <div className="agent-card__field-label">Opening Line</div>
             <div className="agent-card__field-value">{agent.first_message}</div>
+          </div>
+          <div className="agent-card__field">
+            <div className="agent-card__field-label">Voice ID</div>
+            <div className="agent-card__field-value">{agent.voice_id}</div>
           </div>
         </div>
 

@@ -92,6 +92,7 @@ async def run_bot(
     user_id: int,
     target_name: str,
     to_number: str,
+    voice_id: str,
 ):
     llm = OpenAILLMService(
         api_key=os.getenv("OPENAI_API_KEY"),
@@ -105,7 +106,7 @@ async def run_bot(
         output_format="pcm_8000",
         push_silence_after_stopping=False,
         settings=ElevenLabsTTSService.Settings(
-            voice="zmcVlqmyk3Jpn5AVYcAL",
+            voice=voice_id,
             model="eleven_turbo_v2",
         ),
     )
@@ -247,4 +248,5 @@ async def bot(runner_args: RunnerArguments):
     
     system_prompt = agent.system_prompt
     first_message = agent.first_message
-    await run_bot(transport, runner_args.handle_sigint, vad, system_prompt, first_message, user_id, target_name, to_number)
+    voice_id = agent.voice_id
+    await run_bot(transport, runner_args.handle_sigint, vad, system_prompt, first_message, user_id, target_name, to_number, voice_id)
