@@ -20,6 +20,7 @@ function CallStatusModal({ callSid, contact, agent, onClose }) {
   const [done, setDone] = useState(false);
   const [aborting, setAborting] = useState(false);
   const [aborted, setAborted] = useState(false);
+  const [failing, setFailing] = useState(false);
   const intervalRef = useRef(null);
   const durationRef = useRef(null);
 
@@ -38,6 +39,10 @@ function CallStatusModal({ callSid, contact, agent, onClose }) {
           setDone(true);
           clearInterval(intervalRef.current);
           clearInterval(durationRef.current);
+          if (["failed", "busy", "no-answer"].includes(data.status)) {
+            setFailing(true);
+            setTimeout(() => onClose(), 2000);
+          }
         }
       } catch (err) {
         console.error("Status poll error:", err);
@@ -124,6 +129,10 @@ function CallStatusModal({ callSid, contact, agent, onClose }) {
           {aborted ? (
             <div className="ic-modal__aborted">
               ⚠ MISSION ABORTED — CLOSING...
+            </div>
+          ) : failing ? (
+            <div className="ic-modal__aborted">
+              ⚠ TRANSMISSION FAILED — CLOSING...
             </div>
           ) : done ? (
             <div className="ic-modal__footer-done">◉ TRANSMISSION COMPLETE</div>
