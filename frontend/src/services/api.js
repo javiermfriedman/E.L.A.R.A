@@ -174,3 +174,7 @@ export async function deleteAgents() {
 export async function deleteRecording(recordingId) {
   return request(`/recordings/${recordingId}`, { method: "DELETE" });
 }
+
+export async function deleteAgent(agentId) {
+  return request(`/agents/${agentId}`, { method: "DELETE" });
+}

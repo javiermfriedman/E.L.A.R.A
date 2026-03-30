@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import PanelWrapper from "../../components/ui/PanelWrapper";
-import { getAgents, createAgent } from "../../services/api";
+import { getAgents, createAgent, deleteAgent } from "../../services/api";
 import { voiceRegistry } from "../../data/voiceRegistry";
 import VoiceRegistry from "./VoiceRegistry";
 import "./Agents.css";
@@ -225,13 +225,29 @@ function CreateAgentModal({ onClose, onAdded }) {
   );
 }
 
-function AgentCard({ agent, selectedId, onSelect }) {
+function AgentCard({ agent, selectedId, onSelect, onDeleted }) {
   const [expanded, setExpanded] = useState(false);
+  const [deleteStep, setDeleteStep] = useState("idle"); // idle | confirm | deleting | destroyed
+  const [collapsing, setCollapsing] = useState(false);
   const isSelected = selectedId === agent.id;
+
+  async function handleDelete() {
+    setDeleteStep("deleting");
+    try {
+      await deleteAgent(agent.id);
+      setDeleteStep("destroyed");
+      setTimeout(() => {
+        setCollapsing(true);
+        setTimeout(() => onDeleted(agent.id), 400);
+      }, 1200);
+    } catch {
+      setDeleteStep("idle");
+    }
+  }
 
   return (
     <div
-      className={`agent-card ${expanded ? "expanded" : ""} ${isSelected ? "selected" : ""}`}
+      className={`agent-card ${expanded ? "expanded" : ""} ${isSelected ? "selected" : ""} ${deleteStep === "destroyed" ? "agent-card--destroyed" : ""} ${collapsing ? "agent-card--collapsing" : ""}`}
     >
       {/* Header — always visible */}
       <button
@@ -284,12 +300,53 @@ function AgentCard({ agent, selectedId, onSelect }) {
           </div>
         </div>
 
-        <button
-          className="agent-card__select-btn"
-          onClick={() => onSelect(agent)}
-        >
-          {isSelected ? "✓ AGENT ACTIVE" : "⌗ SELECT AGENT"}
-        </button>
+        <div className="agent-card__actions">
+          <button
+            className="agent-card__select-btn"
+            onClick={() => onSelect(agent)}
+          >
+            {isSelected ? "✓ AGENT ACTIVE" : "⌗ SELECT AGENT"}
+          </button>
+
+          {deleteStep === "idle" && (
+            <button
+              className="agent-card__destroy-btn"
+              onClick={() => setDeleteStep("confirm")}
+            >
+              ⚠ DESTROY
+            </button>
+          )}
+
+          {deleteStep === "confirm" && (
+            <div className="agent-card__confirm-bar">
+              <span className="agent-card__confirm-text">SURE?</span>
+              <button
+                className="agent-card__confirm-no"
+                onClick={() => setDeleteStep("idle")}
+              >
+                ABORT
+              </button>
+              <button
+                className="agent-card__confirm-yes"
+                onClick={handleDelete}
+              >
+                ⚠ YES
+              </button>
+            </div>
+          )}
+
+          {deleteStep === "deleting" && (
+            <div className="agent-card__destroying">
+              <span className="agent-card__destroying-text">⌗ DESTROYING...</span>
+            </div>
+          )}
+
+          {deleteStep === "destroyed" && (
+            <div className="agent-card__destroyed">
+              <span className="agent-card__destroyed-text">◉ DESTROYED</span>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -328,6 +385,10 @@ export default function Agents({ agents, setAgents, selectedId, onSelect }) {
                 agent={agent}
                 selectedId={selectedId}
                 onSelect={onSelect}
+                onDeleted={(id) => {
+                  setAgents((prev) => prev.filter((a) => a.id !== id));
+                  if (selectedId === id) onSelect(null);
+                }}
               />
             ))}
           </div>
