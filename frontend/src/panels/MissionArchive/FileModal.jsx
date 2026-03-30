@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { getRecordingAudio } from "../../services/api";
+import { getRecordingAudio, deleteRecording } from "../../services/api";
 import "./FileModal.css";
 
 function TapeReel({ spinning }) {
@@ -32,11 +32,12 @@ function formatDate(dateStr) {
   );
 }
 
-export default function FileModal({ recording, onClose }) {
+export default function FileModal({ recording, onClose, onDeleted }) {
   const [audioUrl, setAudioUrl] = useState(null);
   const [loading, setLoading] = useState(true);
   const [playing, setPlaying] = useState(false);
   const [error, setError] = useState("");
+  const [deleteStep, setDeleteStep] = useState("idle"); // idle | confirm | deleting | destroyed
   const audioRef = useRef(null);
 
   useEffect(() => {
@@ -79,6 +80,41 @@ export default function FileModal({ recording, onClose }) {
       audio.play();
       setPlaying(true);
     }
+  }
+
+  async function handleDelete() {
+    setDeleteStep("deleting");
+    if (audioRef.current) audioRef.current.pause();
+    setPlaying(false);
+    try {
+      await deleteRecording(recording.id);
+      setDeleteStep("destroyed");
+      setTimeout(() => {
+        onDeleted?.();
+        onClose();
+      }, 2200);
+    } catch {
+      setDeleteStep("idle");
+    }
+  }
+
+  if (deleteStep === "destroyed") {
+    return (
+      <div className="file-modal-overlay">
+        <div className="file-modal file-modal--destroyed">
+          <div className="file-destroy">
+            <div className="file-destroy__icon">◉</div>
+            <div className="file-destroy__text">FILE DESTROYED</div>
+            <div className="file-destroy__sub">
+              RECORD ID-{recording.id} PERMANENTLY ERASED
+            </div>
+            <div className="file-destroy__bar">
+              <div className="file-destroy__bar-fill" />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -168,7 +204,43 @@ export default function FileModal({ recording, onClose }) {
           <div className="file-modal__footer-label">
             ELARA PRANK OPS — EYES ONLY
           </div>
-          <div className="file-modal__footer-tag">CLASSIFIED</div>
+
+          <div className="file-modal__footer-right">
+            {deleteStep === "idle" && (
+              <button
+                className="file-modal__delete-btn"
+                onClick={() => setDeleteStep("confirm")}
+              >
+                ⚠ DESTROY
+              </button>
+            )}
+
+            {deleteStep === "confirm" && (
+              <div className="file-modal__confirm-bar">
+                <span className="file-modal__confirm-text">ARE YOU SURE?</span>
+                <button
+                  className="file-modal__confirm-no"
+                  onClick={() => setDeleteStep("idle")}
+                >
+                  ABORT
+                </button>
+                <button
+                  className="file-modal__confirm-yes"
+                  onClick={handleDelete}
+                >
+                  ⚠ DESTROY
+                </button>
+              </div>
+            )}
+
+            {deleteStep === "deleting" && (
+              <div className="file-modal__deleting">
+                <span className="file-modal__deleting-text">⌗ DESTROYING...</span>
+              </div>
+            )}
+
+            <div className="file-modal__footer-tag">CLASSIFIED</div>
+          </div>
         </div>
       </div>
     </div>

@@ -53,4 +53,13 @@ async def delete_recordings(db: db_dependency, user: user_dependency):
     for recording in recordings:
         db.delete(recording)
     db.commit()
-    return RecordingDeleteResponse(message="Recordings deleted successfully")
+    return RecordingDeleteResponse(message="All recordings deleted successfully")
+
+@router.delete("/{recording_id}", response_model=RecordingDeleteResponse)
+async def delete_recording(recording_id: int, db: db_dependency, user: user_dependency):
+    recording = db.query(Recordings).filter(Recordings.id == recording_id, Recordings.user_id == user["id"]).first()
+    if not recording:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Recording not found")
+    db.delete(recording)
+    db.commit()
+    return RecordingDeleteResponse(message=f"Recording {recording_id} deleted successfully")

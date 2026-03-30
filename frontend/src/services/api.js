@@ -170,3 +170,7 @@ export async function deleteRecordings() {
 export async function deleteAgents() {
   return request("/agents/", { method: "DELETE" });
 }
+
+export async function deleteRecording(recordingId) {
+  return request(`/recordings/${recordingId}`, { method: "DELETE" });
+}

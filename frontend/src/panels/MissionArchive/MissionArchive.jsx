@@ -79,7 +79,14 @@ export default function MissionArchive({ refreshKey }) {
       </PanelWrapper>
 
       {selected && (
-        <FileModal recording={selected} onClose={() => setSelected(null)} />
+        <FileModal
+          recording={selected}
+          onClose={() => setSelected(null)}
+          onDeleted={() => {
+            setSelected(null);
+            setRecordings((prev) => prev.filter((r) => r.id !== selected.id));
+          }}
+        />
       )}
     </>
   );
