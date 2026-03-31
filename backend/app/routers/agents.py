@@ -67,3 +67,12 @@ async def get_agents(db: db_dependency, user: user_dependency):
         db.delete(agent)
     db.commit()
     return AgentDeleteResponse(message="Agents deleted successfully")
+
+@router.delete("/{agent_id}", response_model=AgentDeleteResponse)
+async def delete_agent(agent_id: int, db: db_dependency, user: user_dependency):
+    agent = db.query(Agents).filter(Agents.id == agent_id, Agents.owner_id == user["id"]).first()
+    if not agent:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Agent not found")
+    db.delete(agent)
+    db.commit()
+    return AgentDeleteResponse(message=f"Agent {agent_id} deleted successfully")

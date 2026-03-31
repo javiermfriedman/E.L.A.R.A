@@ -1,0 +1,18 @@
+/prompts/
+
+# Environment secrets
+.env
+!.env.example
+
+# Python
+__pycache__/
+*.pyc
+*.db
+app.log
+
+# Node
+node_modules/
+dist/
+
+# Recordings
+recordings/

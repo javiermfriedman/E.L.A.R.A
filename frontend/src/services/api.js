@@ -1,4 +1,4 @@
-const BASE_URL = "http://localhost:8000";
+const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
 // ─── Token helpers ───────────────────────────────────────────
 export function getToken() {
@@ -169,4 +169,12 @@ export async function deleteRecordings() {
 
 export async function deleteAgents() {
   return request("/agents/", { method: "DELETE" });
+}
+
+export async function deleteRecording(recordingId) {
+  return request(`/recordings/${recordingId}`, { method: "DELETE" });
+}
+
+export async function deleteAgent(agentId) {
+  return request(`/agents/${agentId}`, { method: "DELETE" });
 }

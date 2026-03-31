@@ -1,0 +1,43 @@
+services:
+  ngrok:
+    image: ngrok/ngrok:latest
+    environment:
+      NGROK_AUTHTOKEN: ${NGROK_AUTHTOKEN}
+    command:
+      - "http"
+      - "http://backend:8000"
+    ports:
+      - "4040:4040"
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ./backend
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./backend/.env
+    environment:
+      DATABASE_URL: sqlite:////backend/data/elara.db
+      ENV: local
+    volumes:
+      - elara-data:/backend/data
+      - elara-recordings:/backend/recordings
+    depends_on:
+      - ngrok
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+    ports:
+      - "5173:5173"
+    environment:
+      VITE_API_URL: http://localhost:8000
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  elara-data:
+  elara-recordings:
