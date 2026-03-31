@@ -15,6 +15,115 @@ function TapeReel({ spinning }) {
   );
 }
 
+const EXTRACT_PHASES = [
+  { at: 0, label: "INITIATING SECURE CHANNEL..." },
+  { at: 1500, label: "DECRYPTING CLASSIFIED INTEL..." },
+  { at: 3000, label: "EXTRACTING AUDIO FILE..." },
+  { at: 4500, label: "EXTRACTION COMPLETE" },
+];
+
+function randomHex(len) {
+  return Array.from({ length: len }, () =>
+    Math.floor(Math.random() * 16).toString(16).toUpperCase()
+  ).join("");
+}
+
+function ExtractionOverlay({ recording, onComplete }) {
+  const [phase, setPhase] = useState(0);
+  const [progress, setProgress] = useState(0);
+  const [hexLines, setHexLines] = useState(() =>
+    Array.from({ length: 10 }, () => randomHex(48))
+  );
+  const [complete, setComplete] = useState(false);
+
+  useEffect(() => {
+    const timers = EXTRACT_PHASES.map((p, i) =>
+      setTimeout(() => setPhase(i), p.at)
+    );
+    return () => timers.forEach(clearTimeout);
+  }, []);
+
+  useEffect(() => {
+    const start = Date.now();
+    const duration = 4500;
+    const id = setInterval(() => {
+      const elapsed = Date.now() - start;
+      setProgress(Math.min(100, Math.round((elapsed / duration) * 100)));
+      if (elapsed >= duration) clearInterval(id);
+    }, 50);
+    return () => clearInterval(id);
+  }, []);
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      setHexLines((prev) => [...prev.slice(1), randomHex(48)]);
+    }, 120);
+    return () => clearInterval(id);
+  }, []);
+
+  useEffect(() => {
+    if (phase === 3) {
+      const t = setTimeout(() => {
+        setComplete(true);
+        setTimeout(onComplete, 1000);
+      }, 600);
+      return () => clearTimeout(t);
+    }
+  }, [phase, onComplete]);
+
+  const d = new Date(recording.created_at);
+  const dateTag = `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, "0")}${String(d.getDate()).padStart(2, "0")}`;
+
+  return (
+    <div className="extract-overlay">
+      <div className="extract-modal">
+        <div className="extract__header">
+          <span className="extract__header-icon">◈</span>
+          SECURE EXTRACTION PROTOCOL
+        </div>
+
+        <div className="extract__hex-stream">
+          {hexLines.map((line, i) => (
+            <div key={i} className="extract__hex-line">{line}</div>
+          ))}
+        </div>
+
+        <div className="extract__info">
+          <div className="extract__info-row">
+            <span className="extract__info-key">TARGET</span>
+            <span className="extract__info-val">{recording.target_name}</span>
+          </div>
+          <div className="extract__info-row">
+            <span className="extract__info-key">OP-ID</span>
+            <span className="extract__info-val extract__info-val--blue">ID-{recording.id}</span>
+          </div>
+          <div className="extract__info-row">
+            <span className="extract__info-key">FILE</span>
+            <span className="extract__info-val extract__info-val--dim">
+              {recording.target_name}_{dateTag}.wav
+            </span>
+          </div>
+        </div>
+
+        <div className={`extract__status ${phase === 3 ? "extract__status--done" : ""}`}>
+          {EXTRACT_PHASES[phase].label}
+        </div>
+
+        <div className="extract__bar-wrap">
+          <div className="extract__bar-fill" style={{ width: `${progress}%` }} />
+        </div>
+        <div className="extract__percent">{progress}%</div>
+
+        {complete && (
+          <div className="extract__complete">
+            ◉ FILE SECURED — INITIATING TRANSFER
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function formatDate(dateStr) {
   const d = new Date(dateStr);
   return (
@@ -38,6 +147,7 @@ export default function FileModal({ recording, onClose, onDeleted }) {
   const [playing, setPlaying] = useState(false);
   const [error, setError] = useState("");
   const [deleteStep, setDeleteStep] = useState("idle"); // idle | confirm | deleting | destroyed
+  const [extracting, setExtracting] = useState(false);
   const audioRef = useRef(null);
 
   useEffect(() => {
@@ -80,6 +190,29 @@ export default function FileModal({ recording, onClose, onDeleted }) {
       audio.play();
       setPlaying(true);
     }
+  }
+
+  function triggerDownload() {
+    if (!audioUrl) return;
+    const d = new Date(recording.created_at);
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    const filename = `${recording.target_name}_${y}${m}${day}.wav`;
+    const a = document.createElement("a");
+    a.href = audioUrl;
+    a.download = filename;
+    a.click();
+  }
+
+  function handleDownload() {
+    if (!audioUrl) return;
+    setExtracting(true);
+  }
+
+  function handleExtractionComplete() {
+    triggerDownload();
+    setExtracting(false);
   }
 
   async function handleDelete() {
@@ -206,6 +339,14 @@ export default function FileModal({ recording, onClose, onDeleted }) {
           </div>
 
           <div className="file-modal__footer-right">
+            <button
+              className="file-modal__download-btn"
+              onClick={handleDownload}
+              disabled={!audioUrl}
+            >
+              ↓ DOWNLOAD
+            </button>
+
             {deleteStep === "idle" && (
               <button
                 className="file-modal__delete-btn"
@@ -242,6 +383,13 @@ export default function FileModal({ recording, onClose, onDeleted }) {
             <div className="file-modal__footer-tag">CLASSIFIED</div>
           </div>
         </div>
+
+        {extracting && (
+          <ExtractionOverlay
+            recording={recording}
+            onComplete={handleExtractionComplete}
+          />
+        )}
       </div>
     </div>
   );
