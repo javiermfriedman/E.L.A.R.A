@@ -1,9 +1,11 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { login, register } from "../../services/api";
 import { useElara } from "../../context/ElaraContext";
 import "./Login.css";
 
-export default function Login({ onLogin }) {
+export default function Login() {
+  const navigate = useNavigate();
   const { saveToken } = useElara();
   const [tab, setTab] = useState("login");
   const [error, setError] = useState("");
@@ -39,7 +41,7 @@ export default function Login({ onLogin }) {
 
       const data = await login(form.username, form.password);
       saveToken(data.access_token);
-      onLogin();
+      navigate("/access");
     } catch (err) {
       setError(`⚠ ${err.message.toUpperCase()}`);
     } finally {
