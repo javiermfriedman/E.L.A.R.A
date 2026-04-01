@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import "./Dashboard.css";
 import TopBar from "./TopBar";
 import LeftStrip from "./LeftStrip";
@@ -7,31 +8,15 @@ import Agents from "../../panels/Agents/Agents";
 import InitiateCall from "../../panels/InitiateCall/InitiateCall";
 import MissionArchive from "../../panels/MissionArchive/MissionArchive";
 import SystemStatus from "../../panels/SystemStatus/SystemStatus";
-import { getContacts, getAgents } from "../../services/api";
+import { getContacts, getAgents, removeToken } from "../../services/api";
 
-function Panel({ label, style }) {
-  return (
-    <div
-      style={{
-        border: "1px solid rgba(0,255,156,0.15)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        color: "var(--color-text-dim)",
-        fontFamily: "var(--font-mono)",
-        fontSize: "11px",
-        letterSpacing: "0.2em",
-        textTransform: "uppercase",
-        background: "var(--color-bg-panel)",
-        ...style,
-      }}
-    >
-      {label}
-    </div>
-  );
-}
+export default function Dashboard() {
+  const navigate = useNavigate();
 
-export default function Dashboard({ onLogout }) {
+  function handleLogout() {
+    removeToken();
+    navigate("/login", { replace: true });
+  }
   const [selectedContact, setSelectedContact] = useState(null);
   const [selectedAgent, setSelectedAgent] = useState(null);
   const [contacts, setContacts] = useState([]);
@@ -65,7 +50,7 @@ export default function Dashboard({ onLogout }) {
         <TopBar />
       </div>
       <div className="dashboard__leftstrip">
-        <LeftStrip onLogout={onLogout} />
+        <LeftStrip onLogout={handleLogout} />
       </div>
       <div className="dashboard__contacts">
         <Contacts

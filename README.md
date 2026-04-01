@@ -22,7 +22,7 @@ The entire interface is styled as a classified military operations terminal: CRT
 
 | Layer | Tech |
 |-------|------|
-| Frontend | React 19, Vite 8, plain CSS |
+| Frontend | React 19, React Router 7, Vite 8, plain CSS |
 | Backend | FastAPI, SQLAlchemy, SQLite |
 | Voice pipeline | [Pipecat](https://github.com/pipecat-ai/pipecat) (OpenAI GPT-4 + ElevenLabs + Deepgram) |
 | Telephony | Twilio (outbound calls + media streams) |
@@ -59,7 +59,7 @@ E.L.A.R.A/
 │   └── entrypoint.sh            # ngrok URL discovery + uvicorn start
 ├── frontend/
 │   ├── src/
-│   │   ├── App.jsx              # Auth flow (login → access granted → dashboard)
+│   │   ├── App.jsx              # Router, route guards, auth redirects
 │   │   ├── context/ElaraContext.jsx
 │   │   ├── services/api.js      # All backend API calls
 │   │   ├── components/
@@ -208,6 +208,7 @@ Then set `LOCAL_SERVER_URL` in `backend/.env` to the ngrok HTTPS URL.
 - **Recordings**: Both channels (agent + target) are captured by an `AudioBufferProcessor` in the pipeline, saved as WAV files locally and as blobs in SQLite.
 - **ngrok**: Required because Twilio needs a public HTTPS endpoint to send TwiML webhooks and connect media streams. The Docker entrypoint auto-discovers the tunnel URL so you don't have to copy-paste it.
 - **Auth**: JWT tokens issued by the backend, stored in `localStorage` on the frontend. All API calls (except register/login) require a valid token.
+- **Routing**: React Router with three routes — `/login`, `/access` (post-login animation), and `/dashboard`. Route guards redirect unauthenticated users to `/login` and bounce already-authenticated users away from the login page. Any unknown path redirects based on auth status.
 
 ---
 

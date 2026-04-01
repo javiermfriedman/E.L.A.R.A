@@ -1,11 +1,14 @@
 import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import "./AccessGranted.css";
 
-export default function AccessGranted({ onComplete }) {
+export default function AccessGranted() {
+  const navigate = useNavigate();
+
   useEffect(() => {
-    const timer = setTimeout(onComplete, 2800);
+    const timer = setTimeout(() => navigate("/dashboard", { replace: true }), 2800);
     return () => clearTimeout(timer);
-  }, [onComplete]);
+  }, [navigate]);
 
   return (
     <div className="ag">
