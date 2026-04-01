@@ -1,4 +1,4 @@
-[# E.L.A.R.A.](https://github.com/user-attachments/assets/f97c235e-2ce1-4978-82fe-470480daab35)
+![Image](https://github.com/user-attachments/assets/c451e970-c609-4488-84dc-b56a8932ef0a)
 
 **Enhanced Language Acquisition & Response Agent**
 
