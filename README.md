@@ -1,6 +1,8 @@
-![Image](https://github.com/user-attachments/assets/c451e970-c609-4488-84dc-b56a8932ef0a)
-
-**Enhanced Language Acquisition & Response Agent**
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/c451e970-c609-4488-84dc-b56a8932ef0a" width="500"/>
+  <br/>
+  <em>E.L.A.R.A. — Operational Interface</em>
+</p>
 
 
 A full-stack AI prank call platform. Build custom voice agents, pick a target from your contacts, and launch a call — E.L.A.R.A. handles the conversation in real-time over the phone while you sit back and listen to the recording.
