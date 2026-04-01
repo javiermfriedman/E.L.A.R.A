@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/c451e970-c609-4488-84dc-b56a8932ef0a" width="500"/>
+  <img src="https://github.com/user-attachments/assets/c451e970-c609-4488-84dc-b56a8932ef0a" width="700"/>
   <br/>
   <em>E.L.A.R.A. — Operational Interface</em>
 </p>
