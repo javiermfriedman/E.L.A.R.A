@@ -96,7 +96,7 @@ E.L.A.R.A/
 ### 1. Clone the repo
 
 ```bash
-git clone https://github.com/<your-username>/E.L.A.R.A.git
+git clone https://github.com/javermfriedman/E.L.A.R.A.git
 cd E.L.A.R.A
 ```
 
