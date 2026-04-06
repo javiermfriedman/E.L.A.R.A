@@ -5,7 +5,7 @@
 </p>
 
 
-A full-stack AI prank call platform. Build custom voice agents, pick a target from your contacts, and launch a call — E.L.A.R.A. handles the conversation in real-time over the phone while you sit back and listen to the recording.
+A full-stack AI prank call platform. Build custom voice agents, pick a target from your contacts, and launch a call. The E.L.A.R.A. server handles the conversation in real-time over the phone while you sit back and listen to the recording.
 
 The entire interface is styled as a classified military operations terminal: CRT scanlines, neon green on black, glitch effects, and monospace everything.
 
