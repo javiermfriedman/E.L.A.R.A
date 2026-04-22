@@ -139,8 +139,6 @@ def start_dev_server():
             print("✅ Frontend ready!")
 
         if backend_up and frontend_up:
-            print("🚀 Opening Arc...")
-            fade_spotify_volume(30, duration=3.0)
             time.sleep(1.5)
             browser = "Arc"
             subprocess.Popen(["open", "-a", browser, "http://localhost:5173"])

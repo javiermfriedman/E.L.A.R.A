@@ -14,3 +14,6 @@ pipecat-ai[websocket,elevenlabs,silero,openai,deepgram,runner]==0.0.105
 deepgram-sdk==6.0.1
 twilio
 torch
+pytest
+pytest-asyncio
+httpx
